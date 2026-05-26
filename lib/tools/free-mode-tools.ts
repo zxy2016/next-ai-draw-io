@@ -114,7 +114,7 @@ Example (generate ONLY this - no wrapper tags):
   <mxGeometry x="20" y="60" width="160" height="40" as="geometry"/>
 </mxCell>
 <mxCell id="lane2" value="Backend" style="swimlane;" vertex="1" parent="1">
-  <mxGeometry x="40" y="40" width="200" height="200" as="geometry"/>
+  <mxGeometry x="280" y="40" width="200" height="200" as="geometry"/>
 </mxCell>
 <mxCell id="step2" value="Step 2" style="rounded=1;" vertex="1" parent="lane2">
   <mxGeometry x="20" y="60" width="160" height="40" as="geometry"/>
