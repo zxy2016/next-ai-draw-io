@@ -237,7 +237,9 @@ export function ToolCallCard({
                         >
                             {isTruncated
                                 ? "Output truncated due to length limits. Try a simpler request or increase the maxOutputLength."
-                                : output}
+                                : typeof output === "string"
+                                  ? output
+                                  : JSON.stringify(output)}
                         </div>
                     )
                 })()}

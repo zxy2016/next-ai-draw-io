@@ -651,6 +651,36 @@ export function ChatMessageDisplay({
                                 // Note: Don't delete editDiagramOriginalXmlRef here - tool handler needs it
                             }
                         }
+
+                        // Handle propose_swimlane_ir (server-side execute tool from
+                        // swimlane mode). The execute function runs Zod validation
+                        // and irToXml() on the server; we receive the final XML in
+                        // part.output and feed it to handleDisplayChart, reusing the
+                        // exact same render path as display_diagram.
+                        //
+                        // No input-streaming branch: the IR JSON is structured and
+                        // useless to render incrementally; we wait for the final
+                        // tool-result (output-available state).
+                        if (
+                            part.type === "tool-propose_swimlane_ir" &&
+                            state === "output-available" &&
+                            !processedToolCalls.current.has(toolCallId)
+                        ) {
+                            const output = toolPart.output
+                            const xml =
+                                output &&
+                                typeof output === "object" &&
+                                typeof (output as { xml?: unknown }).xml ===
+                                    "string"
+                                    ? ((output as { xml: string })
+                                          .xml as string)
+                                    : null
+
+                            if (xml) {
+                                handleDisplayChart(xml, true)
+                                processedToolCalls.current.add(toolCallId)
+                            }
+                        }
                     }
                 })
             }

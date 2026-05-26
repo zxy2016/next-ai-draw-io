@@ -179,6 +179,9 @@ export default function ChatPanel({
     const [vlmValidationEnabled, setVlmValidationEnabled] = useState(false)
     const [customSystemMessage, setCustomSystemMessage] = useState("")
     const [shouldFocusInput, setShouldFocusInput] = useState(false)
+    // Phase 3b: flow mode — 'free' (default) or 'swimlane' (IR-driven 2D matrix)
+    // Phase 3c will hydrate this from localStorage and add a UI toggle
+    const [flowMode, _setFlowMode] = useState<"free" | "swimlane">("free")
 
     // Restore input from sessionStorage on mount (when ChatPanel remounts due to key change)
     useEffect(() => {
@@ -1107,6 +1110,10 @@ export default function ChatPanel({
                     }),
                     ...(minimalStyle && {
                         "x-minimal-style": "true",
+                    }),
+                    // Flow mode header — server picks tool set based on this
+                    ...(flowMode !== "free" && {
+                        "x-flow-mode": flowMode,
                     }),
                 },
             },
