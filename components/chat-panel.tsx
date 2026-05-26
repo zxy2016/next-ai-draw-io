@@ -7,6 +7,7 @@ import {
     PanelRightClose,
     PanelRightOpen,
     Settings,
+    Workflow,
 } from "lucide-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import type React from "react"
@@ -47,6 +48,7 @@ import { DevXmlSimulator } from "./dev-xml-simulator"
 
 // localStorage keys for persistence
 const STORAGE_SESSION_ID_KEY = "next-ai-draw-io-session-id"
+const STORAGE_FLOW_MODE_KEY = "next-ai-draw-io-flow-mode"
 
 // sessionStorage keys
 const SESSION_STORAGE_INPUT_KEY = "next-ai-draw-io-input"
@@ -179,15 +181,23 @@ export default function ChatPanel({
     const [vlmValidationEnabled, setVlmValidationEnabled] = useState(false)
     const [customSystemMessage, setCustomSystemMessage] = useState("")
     const [shouldFocusInput, setShouldFocusInput] = useState(false)
-    // Phase 3b: flow mode — 'free' (default) or 'swimlane' (IR-driven 2D matrix)
-    // Phase 3c will hydrate this from localStorage and add a UI toggle
-    const [flowMode, _setFlowMode] = useState<"free" | "swimlane">("free")
+    // Flow mode: 'free' (default generic draw.io) or 'swimlane' (IR-driven 2D matrix)
+    // Persisted across reloads in localStorage; toggle button in chat header
+    const [flowMode, setFlowMode] = useState<"free" | "swimlane">("free")
 
     // Restore input from sessionStorage on mount (when ChatPanel remounts due to key change)
     useEffect(() => {
         const savedInput = sessionStorage.getItem(SESSION_STORAGE_INPUT_KEY)
         if (savedInput) {
             setInput(savedInput)
+        }
+    }, [])
+
+    // Restore flowMode from localStorage on mount
+    useEffect(() => {
+        const stored = localStorage.getItem(STORAGE_FLOW_MODE_KEY)
+        if (stored === "swimlane") {
+            setFlowMode("swimlane")
         }
     }, [])
 
@@ -977,6 +987,24 @@ export default function ChatPanel({
         pathname,
     ])
 
+    // Toggle flow mode (free ↔ swimlane).
+    // Mode changes invalidate the tool history (different tool sets, different
+    // semantics for prior turns), so we clear messages on every switch.
+    const handleToggleFlowMode = useCallback(() => {
+        const next: "free" | "swimlane" =
+            flowMode === "swimlane" ? "free" : "swimlane"
+        setFlowMode(next)
+        localStorage.setItem(STORAGE_FLOW_MODE_KEY, next)
+        // Clear conversation so old display_diagram / propose_swimlane_ir
+        // history doesn't confuse the model under the new tool set
+        setMessages([])
+        toast.success(
+            next === "swimlane"
+                ? "已切换到泳道图模式(Swimlane)"
+                : "已切换到自由模式(Free)",
+        )
+    }, [flowMode, setMessages])
+
     // Handle sending a template directly (called from TemplatePanel)
     const handleSendTemplate = useCallback(
         async (template: { prompt: string }) => {
@@ -1339,6 +1367,33 @@ export default function ChatPanel({
                         </div>
                     </button>
                     <div className="flex items-center gap-1 justify-end overflow-visible">
+                        <ButtonWithTooltip
+                            tooltipContent={
+                                flowMode === "swimlane"
+                                    ? "当前: 泳道图模式 (点击切回自由模式)"
+                                    : "当前: 自由模式 (点击切到泳道图模式)"
+                            }
+                            variant="ghost"
+                            size="icon"
+                            onClick={handleToggleFlowMode}
+                            disabled={
+                                status === "streaming" || status === "submitted"
+                            }
+                            className={`hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed ${
+                                flowMode === "swimlane"
+                                    ? "bg-accent text-primary"
+                                    : ""
+                            }`}
+                            data-testid="flow-mode-toggle"
+                        >
+                            <Workflow
+                                className={`${isMobile ? "h-4 w-4" : "h-5 w-5"} ${
+                                    flowMode === "swimlane"
+                                        ? "text-primary"
+                                        : "text-muted-foreground"
+                                }`}
+                            />
+                        </ButtonWithTooltip>
                         <ButtonWithTooltip
                             tooltipContent={dict.nav.newChat}
                             variant="ghost"
