@@ -33,7 +33,7 @@ import {
     wrapWithObserve,
 } from "@/lib/langfuse"
 import { findServerModelById } from "@/lib/server-model-config"
-import { getSystemPrompt } from "@/lib/system-prompts"
+import { getSystemPromptForMode } from "@/lib/system-prompts"
 import { getToolsForMode, parseFlowMode } from "@/lib/tools"
 import { getUserIdFromRequest } from "@/lib/user-id"
 
@@ -263,7 +263,11 @@ async function handleChatRequest(req: Request): Promise<Response> {
     )
 
     // Get the appropriate system prompt based on model (extended for Opus/Haiku 4.5)
-    const systemMessage = getSystemPrompt(modelId, minimalStyle)
+    const systemMessage = getSystemPromptForMode(
+        flowMode,
+        modelId,
+        minimalStyle,
+    )
     const finalSystemMessage = customSystemMessage
         ? `${systemMessage}\n\n## Custom Instructions\n${customSystemMessage}`
         : systemMessage
@@ -457,51 +461,70 @@ ${userInputText}
     const isSingleSystemProvider =
         SINGLE_SYSTEM_PROVIDERS.has(resolvedProvider) || isCustomOpenAIEndpoint
 
-    const xmlContext = `${
-        previousXml
-            ? `Previous diagram XML (before user's last message):
+    // Swimlane mode 输出 IR JSON 不是 mxCell XML,注入 xmlContext 会让模型困惑
+    // (画布上的 XML 不是 IR 工具的输入,也不能被 propose_swimlane_ir 增量编辑)
+    const xmlContext =
+        flowMode === "swimlane"
+            ? ""
+            : `${
+                  previousXml
+                      ? `Previous diagram XML (before user's last message):
 """xml
 ${previousXml}
 """
 
 `
-            : ""
-    }Current diagram XML (AUTHORITATIVE - the source of truth):
+                      : ""
+              }Current diagram XML (AUTHORITATIVE - the source of truth):
 """xml
 ${xml || ""}
 """
 
 IMPORTANT: The "Current diagram XML" is the SINGLE SOURCE OF TRUTH for what's on the canvas right now. The user can manually add, delete, or modify shapes directly in draw.io. Always count and describe elements based on the CURRENT XML, not on what you previously generated. If both previous and current XML are shown, compare them to understand what the user changed. When using edit_diagram, COPY search patterns exactly from the CURRENT XML - attribute order matters!`
 
-    const systemMessages = isSingleSystemProvider
-        ? [
-              {
-                  role: "system" as const,
-                  content: `${finalSystemMessage}\n\n${xmlContext}`,
-              },
-          ]
-        : [
-              // Cache breakpoint 1: Instructions (+ optional custom instructions)
-              {
-                  role: "system" as const,
-                  content: finalSystemMessage,
-                  ...(shouldCache && {
-                      providerOptions: {
-                          bedrock: { cachePoint: { type: "default" } },
-                      },
-                  }),
-              },
-              // Cache breakpoint 2: Previous and Current diagram XML context
-              {
-                  role: "system" as const,
-                  content: xmlContext,
-                  ...(shouldCache && {
-                      providerOptions: {
-                          bedrock: { cachePoint: { type: "default" } },
-                      },
-                  }),
-              },
-          ]
+    // Swimlane mode 不需要 xml-context system message,只发主 prompt
+    const systemMessages =
+        flowMode === "swimlane"
+            ? [
+                  {
+                      role: "system" as const,
+                      content: finalSystemMessage,
+                      ...(shouldCache && {
+                          providerOptions: {
+                              bedrock: { cachePoint: { type: "default" } },
+                          },
+                      }),
+                  },
+              ]
+            : isSingleSystemProvider
+              ? [
+                    {
+                        role: "system" as const,
+                        content: `${finalSystemMessage}\n\n${xmlContext}`,
+                    },
+                ]
+              : [
+                    // Cache breakpoint 1: Instructions (+ optional custom instructions)
+                    {
+                        role: "system" as const,
+                        content: finalSystemMessage,
+                        ...(shouldCache && {
+                            providerOptions: {
+                                bedrock: { cachePoint: { type: "default" } },
+                            },
+                        }),
+                    },
+                    // Cache breakpoint 2: Previous and Current diagram XML context
+                    {
+                        role: "system" as const,
+                        content: xmlContext,
+                        ...(shouldCache && {
+                            providerOptions: {
+                                bedrock: { cachePoint: { type: "default" } },
+                            },
+                        }),
+                    },
+                ]
 
     const allMessages = [...systemMessages, ...enhancedMessages]
 

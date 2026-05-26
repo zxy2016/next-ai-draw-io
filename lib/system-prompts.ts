@@ -365,6 +365,27 @@ const EXTENDED_PROMPT_MODEL_PATTERNS = [
     "claude-haiku-4-5", // Matches any Haiku 4.5 variant
 ]
 
+import { SWIMLANE_SYSTEM_PROMPT } from "@/lib/swimlane/system-prompt"
+/**
+ * Mode-aware system prompt dispatcher.
+ *
+ * - free:     调用 getSystemPrompt (通用 draw.io,带 minimal-style/扩展模型分支)
+ * - swimlane: 返回 SWIMLANE_SYSTEM_PROMPT,纯文本,不参与 minimalStyle / 扩展 prompt 逻辑
+ *             (swimlane 的 prompt 已经是高度定制的工艺产物,叠加 style 指令会冲突)
+ */
+import type { FlowMode } from "@/lib/tools"
+
+export function getSystemPromptForMode(
+    mode: FlowMode,
+    modelId?: string,
+    minimalStyle?: boolean,
+): string {
+    if (mode === "swimlane") {
+        return SWIMLANE_SYSTEM_PROMPT
+    }
+    return getSystemPrompt(modelId, minimalStyle)
+}
+
 /**
  * Get the appropriate system prompt based on the model ID and style preference
  * Uses extended prompt for Opus 4.5 and Haiku 4.5 which have 4000 token cache minimum
