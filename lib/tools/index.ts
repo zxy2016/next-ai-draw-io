@@ -1,5 +1,6 @@
 import "server-only"
 import { getFreeModeTools } from "./free-mode-tools"
+import { getSwimlaneModeTools } from "./swimlane-mode-tools"
 
 /**
  * Flow mode 枚举。
@@ -22,14 +23,14 @@ export function parseFlowMode(
 
 /**
  * 根据 mode 返回对应的工具集。
- * Phase 2 仅实现 free,swimlane 暂时复用 free(下一阶段接入)。
+ *
+ * 注意:返回类型是 union(free 与 swimlane 的工具结构不同),由 streamText 的
+ * tools 参数接受。TypeScript 不强制对齐两个分支的具体形状。
  */
 export function getToolsForMode(mode: FlowMode) {
     switch (mode) {
         case "swimlane":
-            // Phase 3 会在此返回 swimlane 专用工具集
-            // 当前先返回 free,确保中间态可运行
-            return getFreeModeTools()
+            return getSwimlaneModeTools()
         case "free":
         default:
             return getFreeModeTools()

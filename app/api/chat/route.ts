@@ -156,11 +156,20 @@ async function handleChatRequest(req: Request): Promise<Response> {
     }
     // === FILE VALIDATION END ===
 
+    // === FLOW MODE START ===
+    // 'free' (default generic draw.io) or 'swimlane' (IR-driven 2D matrix).
+    // 必须在 CACHE CHECK 之前解析 —— swimlane mode 要跳过 cache(避免命中
+    // free mode 的预生成 demo XML,语义不一致)。
+    const flowMode = parseFlowMode(req.headers.get("x-flow-mode"))
+    // === FLOW MODE END ===
+
     // === CACHE CHECK START ===
+    // Swimlane mode 的输出是 IR 工具调用,与 cached display_diagram XML 不兼容,
+    // 同时也希望保留 IR self-healing 体验(不被预生成示例打断)
     const isFirstMessage = messages.length === 1
     const isEmptyDiagram = !xml || xml.trim() === "" || isMinimalDiagram(xml)
 
-    if (isFirstMessage && isEmptyDiagram) {
+    if (flowMode === "free" && isFirstMessage && isEmptyDiagram) {
         const lastMessage = messages[0]
         const textPart = lastMessage.parts?.find((p: any) => p.type === "text")
         const filePart = lastMessage.parts?.find((p: any) => p.type === "file")
@@ -233,10 +242,6 @@ async function handleChatRequest(req: Request): Promise<Response> {
 
     // Read minimal style preference from header
     const minimalStyle = req.headers.get("x-minimal-style") === "true"
-
-    // Flow mode: 'free' (default generic draw.io) or 'swimlane' (IR-driven 2D matrix).
-    // Phase 2: swimlane mode 暂复用 free 工具集,Phase 3 接入 propose_swimlane_ir
-    const flowMode = parseFlowMode(req.headers.get("x-flow-mode"))
 
     console.log(
         `[Client Overrides] provider: ${clientOverrides.provider}, modelId: ${clientOverrides.modelId}, flowMode: ${flowMode}`,
@@ -320,8 +325,9 @@ ${userInputText}
 
     // Replace historical tool call XML with placeholders to reduce tokens
     // Disabled by default - some models (e.g. minimax) copy placeholders instead of generating XML
+    // Swimlane mode 不走 display_diagram,历史里都是 IR 对象,replace 没意义还会破坏 IR 结构
     const enableHistoryReplace =
-        process.env.ENABLE_HISTORY_XML_REPLACE === "true"
+        flowMode === "free" && process.env.ENABLE_HISTORY_XML_REPLACE === "true"
     const placeholderMessages = enableHistoryReplace
         ? replaceHistoricalToolInputs(modelMessages)
         : modelMessages
