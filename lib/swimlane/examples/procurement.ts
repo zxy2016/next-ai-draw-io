@@ -1,0 +1,121 @@
+import type { SwimlaneIR } from "@/lib/swimlane/ir/schema"
+
+/**
+ * 示例 IR:采购审批流程
+ * 4 角色 × 4 阶段 × 10 节点,用于单测和 PoC 验证。
+ */
+export const procurementExample: SwimlaneIR = {
+    title: "采购审批流程",
+    description: "员工发起采购申请到完成入账的全流程",
+    roles: [
+        { id: "r1", name: "申请人" },
+        { id: "r2", name: "部门主管" },
+        { id: "r3", name: "财务" },
+        { id: "r4", name: "采购员" },
+    ],
+    phases: [
+        { id: "p1", name: "申请" },
+        { id: "p2", name: "审批" },
+        { id: "p3", name: "采购" },
+        { id: "p4", name: "入账" },
+    ],
+    nodes: [
+        {
+            id: "n1",
+            roleId: "r1",
+            phaseId: "p1",
+            type: "start",
+            label: "开始",
+            order: 0,
+        },
+        {
+            id: "n2",
+            roleId: "r1",
+            phaseId: "p1",
+            type: "task",
+            label: "填写申请",
+            order: 1,
+        },
+        {
+            id: "n3",
+            roleId: "r2",
+            phaseId: "p2",
+            type: "decision",
+            label: "主管审批",
+            order: 0,
+        },
+        {
+            id: "n4",
+            roleId: "r3",
+            phaseId: "p2",
+            type: "decision",
+            label: "财务复核",
+            order: 0,
+        },
+        {
+            id: "n5",
+            roleId: "r4",
+            phaseId: "p3",
+            type: "task",
+            label: "询价比价",
+            order: 0,
+        },
+        {
+            id: "n6",
+            roleId: "r4",
+            phaseId: "p3",
+            type: "task",
+            label: "下单采购",
+            order: 1,
+        },
+        {
+            id: "n7",
+            roleId: "r3",
+            phaseId: "p4",
+            type: "task",
+            label: "记账",
+            order: 0,
+        },
+        {
+            id: "n8",
+            roleId: "r3",
+            phaseId: "p4",
+            type: "document",
+            label: "归档凭证",
+            order: 1,
+        },
+        {
+            id: "n9",
+            roleId: "r1",
+            phaseId: "p1",
+            type: "end",
+            label: "驳回",
+            order: 2,
+        },
+        {
+            id: "n10",
+            roleId: "r3",
+            phaseId: "p4",
+            type: "end",
+            label: "结束",
+            order: 2,
+        },
+    ],
+    edges: [
+        { id: "e1", from: "n1", to: "n2", style: "solid" },
+        { id: "e2", from: "n2", to: "n3", label: "提交", style: "solid" },
+        { id: "e3", from: "n3", to: "n4", label: "通过", style: "solid" },
+        { id: "e4", from: "n3", to: "n9", label: "驳回", style: "dashed" },
+        { id: "e5", from: "n4", to: "n5", label: "通过", style: "solid" },
+        { id: "e6", from: "n4", to: "n9", label: "驳回", style: "dashed" },
+        { id: "e7", from: "n5", to: "n6", style: "solid" },
+        { id: "e8", from: "n6", to: "n7", label: "完成", style: "solid" },
+        { id: "e9", from: "n7", to: "n8", style: "solid" },
+        { id: "e10", from: "n8", to: "n10", style: "solid" },
+    ],
+    rules: [
+        "单笔金额超过 10 万需财务总监复核签字",
+        "驳回的申请保留 30 天可重新发起",
+        "采购合同必须先归档再付款",
+    ],
+}
