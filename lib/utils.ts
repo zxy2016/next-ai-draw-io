@@ -36,8 +36,16 @@ export function extractRootContent(
     xml: string | undefined | null,
 ): string | null {
     if (!xml) return null
-    const match = xml.match(/<root>([\s\S]*?)<\/root>/)
-    return match ? match[1] : null
+    let decoded = xml
+    // Handle URL-encoded XML which draw.io sometimes provides
+    if (xml.includes("%3C") || xml.includes("%3c")) {
+        try {
+            decoded = decodeURIComponent(xml)
+        } catch (e) {}
+    }
+    const match = decoded.match(/<root>([\s\S]*?)<\/root>/)
+    // Strip all whitespace so formatting differences don't trigger a false positive
+    return match ? match[1].replace(/\s+/g, "") : null
 }
 
 // ============================================================================
