@@ -261,15 +261,20 @@ export function DiagramProvider({ children }: { children: React.ReactNode }) {
                         return prev
                     }
 
-                    // Do not add if only view state (pan/zoom) changed — compare <root> content
+                    // Do not add if the <root> content matches ANY existing version.
+                    // This covers two cases:
+                    // 1. Only view state (pan/zoom) changed on the current version
+                    // 2. User restored an older version then zoomed — the root still
+                    //    matches that restored entry even though it isn't the last one,
+                    //    so comparing only against the last entry would wrongly save it.
                     const newRoot = extractRootContent(extractedXML)
-                    if (newRoot && prev.length > 0) {
-                        const lastRoot = extractRootContent(
-                            prev[prev.length - 1].xml,
+                    if (
+                        newRoot &&
+                        prev.some(
+                            (item) => extractRootContent(item.xml) === newRoot,
                         )
-                        if (lastRoot && lastRoot === newRoot) {
-                            return prev
-                        }
+                    ) {
+                        return prev
                     }
 
                     const newHistory = [
