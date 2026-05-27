@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest"
-import { cn, isMxCellXmlComplete, wrapWithMxFile } from "@/lib/utils"
+import {
+    cn,
+    extractRootContent,
+    isMxCellXmlComplete,
+    wrapWithMxFile,
+} from "@/lib/utils"
 
 describe("isMxCellXmlComplete", () => {
     it("returns false for empty/null input", () => {
@@ -82,5 +87,56 @@ describe("cn (class name utility)", () => {
     it("merges tailwind classes correctly", () => {
         expect(cn("px-2", "px-4")).toBe("px-4")
         expect(cn("text-red-500", "text-blue-500")).toBe("text-blue-500")
+    })
+})
+
+describe("extractRootContent", () => {
+    it("returns null for null/undefined/empty input", () => {
+        expect(extractRootContent(null)).toBeNull()
+        expect(extractRootContent(undefined)).toBeNull()
+        expect(extractRootContent("")).toBeNull()
+    })
+
+    it("extracts root content from a standard mxfile XML", () => {
+        const xml = `<mxfile><diagram><mxGraphModel dx="100" dy="200" pageScale="1"><root><mxCell id="0"/><mxCell id="1" parent="0"/></root></mxGraphModel></diagram></mxfile>`
+        const result = extractRootContent(xml)
+        expect(result).not.toBeNull()
+        expect(result).toContain('id="0"')
+        expect(result).toContain('id="1"')
+    })
+
+    it("returns the same root content when only view state (dx/dy/pageScale) changes", () => {
+        const xml1 = `<mxfile><diagram><mxGraphModel dx="100" dy="200" pageScale="1"><root><mxCell id="0"/><mxCell id="1" parent="0"/></root></mxGraphModel></diagram></mxfile>`
+        const xml2 = `<mxfile><diagram><mxGraphModel dx="999" dy="888" pageScale="2.5"><root><mxCell id="0"/><mxCell id="1" parent="0"/></root></mxGraphModel></diagram></mxfile>`
+
+        const root1 = extractRootContent(xml1)
+        const root2 = extractRootContent(xml2)
+
+        expect(root1).not.toBeNull()
+        expect(root1).toBe(root2)
+    })
+
+    it("returns different root content when diagram content actually changes", () => {
+        const xml1 = `<mxfile><diagram><mxGraphModel><root><mxCell id="0"/><mxCell id="1" parent="0"/></root></mxGraphModel></diagram></mxfile>`
+        const xml2 = `<mxfile><diagram><mxGraphModel><root><mxCell id="0"/><mxCell id="1" parent="0"/><mxCell id="2" value="New" parent="1"/></root></mxGraphModel></diagram></mxfile>`
+
+        const root1 = extractRootContent(xml1)
+        const root2 = extractRootContent(xml2)
+
+        expect(root1).not.toBeNull()
+        expect(root2).not.toBeNull()
+        expect(root1).not.toBe(root2)
+    })
+
+    it("returns null when XML has no <root> element", () => {
+        const xml = `<mxfile><diagram><mxGraphModel></mxGraphModel></diagram></mxfile>`
+        expect(extractRootContent(xml)).toBeNull()
+    })
+
+    it("handles whitespace differences by normalizing them away", () => {
+        const xml1 = `<mxfile><diagram><mxGraphModel><root><mxCell id="0"/>  <mxCell id="1" parent="0"/></root></mxGraphModel></diagram></mxfile>`
+        const xml2 = `<mxfile><diagram><mxGraphModel><root><mxCell id="0"/>\n<mxCell id="1" parent="0"/></root></mxGraphModel></diagram></mxfile>`
+
+        expect(extractRootContent(xml1)).toBe(extractRootContent(xml2))
     })
 })
