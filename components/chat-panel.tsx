@@ -3,6 +3,7 @@
 import { useChat } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
 import {
+    FileEdit,
     MessageSquarePlus,
     PanelRightClose,
     PanelRightOpen,
@@ -25,6 +26,7 @@ import { ChatInput } from "@/components/chat-input"
 import Image from "@/components/image-with-basepath"
 import { ModelConfigDialog } from "@/components/model-config-dialog"
 import { SettingsDialog } from "@/components/settings-dialog"
+import { IREditorDrawer } from "@/components/swimlane/IREditorDrawer"
 import { useDiagram } from "@/contexts/diagram-context"
 import { useDiagramToolHandlers } from "@/hooks/use-diagram-tool-handlers"
 import { useDictionary } from "@/hooks/use-dictionary"
@@ -40,6 +42,7 @@ import { sanitizeMessages } from "@/lib/session-storage"
 import { STORAGE_KEYS } from "@/lib/storage"
 // SwimlaneIR 同名导出: 既是 zod schema (运行时校验) 也是 type (z.infer 推导)
 import { SwimlaneIR } from "@/lib/swimlane/ir/schema"
+import { irToXml } from "@/lib/swimlane/xml/engine"
 import type { UrlData } from "@/lib/url-utils"
 import { type FileData, useFileProcessor } from "@/lib/use-file-processor"
 import { useQuotaManager } from "@/lib/use-quota-manager"
@@ -192,6 +195,7 @@ export default function ChatPanel({
     // 由 chat-message-display 在 propose_swimlane_ir 的 output-available
     // 状态时回传 setCurrentIr。模式切换 / new chat 时清空。
     const [currentIr, setCurrentIr] = useState<SwimlaneIR | null>(null)
+    const [showIrEditor, setShowIrEditor] = useState(false)
 
     // Restore input from sessionStorage on mount (when ChatPanel remounts due to key change)
     useEffect(() => {
@@ -1035,6 +1039,63 @@ export default function ChatPanel({
         }
     }, [])
 
+    /**
+     * 用户在 IREditor 抽屉里点「保存并应用」时调用。
+     *
+     * 流程:
+     *   1. Zod 校验 draft(用户修改可能违反业务规则,如删光了 start 节点)
+     *   2. irToXml 客户端纯函数生成新 XML
+     *   3. onDisplayChart 重画 drawio
+     *   4. setCurrentIr 把 draft 当作"新的当前版本"
+     *   5. setMessages 追加一条虚拟 user 消息(策略乙):
+     *      让模型下一轮看到完整新 IR,基于此版本继续对话。
+     *      不调用 sendMessage —— 这里不触发 LLM 调用,等用户下次发言一起带上。
+     *
+     * 失败时:Zod 错误用 toast 显示,抽屉保持打开供修正。
+     */
+    const handleSaveIr = useCallback(
+        (next: SwimlaneIR) => {
+            const parsed = SwimlaneIR.safeParse(next)
+            if (!parsed.success) {
+                const issues = parsed.error.issues
+                    .slice(0, 3)
+                    .map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`)
+                    .join(" · ")
+                toast.error(`IR 校验失败:${issues}`)
+                return
+            }
+
+            try {
+                const xml = irToXml(parsed.data)
+                onDisplayChart(xml)
+                setCurrentIr(parsed.data)
+
+                // 注入虚拟 user 消息让模型感知改动 —— 不发请求,等用户下次输入时一起带
+                const noteMsg = {
+                    id: `user-ir-edit-${Date.now()}`,
+                    role: "user" as const,
+                    parts: [
+                        {
+                            type: "text" as const,
+                            text: `我手动调整了 IR。当前最新版本如下,请基于这个版本继续对话:
+
+\`\`\`json
+${JSON.stringify(parsed.data, null, 2)}
+\`\`\``,
+                        },
+                    ],
+                }
+                setMessages((prev) => [...prev, noteMsg] as any)
+                toast.success("已应用 IR 修改")
+            } catch (err) {
+                toast.error(
+                    `应用 IR 失败: ${err instanceof Error ? err.message : String(err)}`,
+                )
+            }
+        },
+        [onDisplayChart, setMessages],
+    )
+
     // Handle sending a template directly (called from TemplatePanel)
     const handleSendTemplate = useCallback(
         async (template: { prompt: string }) => {
@@ -1424,6 +1485,27 @@ export default function ChatPanel({
                                 }`}
                             />
                         </ButtonWithTooltip>
+
+                        {/* IR 编辑按钮: 仅 swimlane 模式 + 已有 IR 时显示 */}
+                        {flowMode === "swimlane" && currentIr && (
+                            <ButtonWithTooltip
+                                tooltipContent="编辑当前 IR"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setShowIrEditor(true)}
+                                disabled={
+                                    status === "streaming" ||
+                                    status === "submitted"
+                                }
+                                className="hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
+                                data-testid="ir-editor-button"
+                            >
+                                <FileEdit
+                                    className={`${isMobile ? "h-4 w-4" : "h-5 w-5"} text-muted-foreground`}
+                                />
+                            </ButtonWithTooltip>
+                        )}
+
                         <ButtonWithTooltip
                             tooltipContent={dict.nav.newChat}
                             variant="ghost"
@@ -1546,6 +1628,14 @@ export default function ChatPanel({
                 customSystemMessage={customSystemMessage}
                 onCustomSystemMessageChange={handleCustomSystemMessageChange}
                 onOpenModelConfig={() => setShowModelConfigDialog(true)}
+            />
+
+            {/* Swimlane mode 的 IR 编辑抽屉 */}
+            <IREditorDrawer
+                open={showIrEditor}
+                onOpenChange={setShowIrEditor}
+                ir={currentIr}
+                onSave={handleSaveIr}
             />
 
             <ModelConfigDialog
