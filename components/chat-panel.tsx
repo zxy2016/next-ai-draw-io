@@ -1126,6 +1126,12 @@ export default function ChatPanel({
                 onDisplayChart(xml)
                 setCurrentIr(parsed.data)
 
+                // Immediately save this new manual IR version to history
+                // (setTimeout allows draw.io iframe to render before capturing svg)
+                setTimeout(() => {
+                    onExport()
+                }, 500)
+
                 // 注入虚拟 user 消息让模型感知改动 —— 不发请求,等用户下次输入时一起带。
                 // 用 metadata.synthetic 标记,UI 据此跳过"编辑"按钮渲染,handleEditMessage
                 // 也据此跳过(因为没有对应的 xmlSnapshot)。
