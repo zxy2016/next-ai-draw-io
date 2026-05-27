@@ -528,7 +528,7 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
                                 <ImageIcon className="h-4 w-4" />
                             </ButtonWithTooltip>
 
-                            {onUrlChange && (
+                            {/* {onUrlChange && (
                                 <ButtonWithTooltip
                                     type="button"
                                     variant="ghost"
@@ -540,7 +540,7 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
                                 >
                                     <Link className="h-4 w-4" />
                                 </ButtonWithTooltip>
-                            )}
+                            )} */}
 
                             <ButtonWithTooltip
                                 type="button"

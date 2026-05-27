@@ -362,7 +362,10 @@ ${finalXml}
             }
 
             // Save this new diagram version to history
-            onExport()
+            // Wait for draw.io to finish rendering the loaded XML before exporting
+            setTimeout(() => {
+                onExport()
+            }, 500)
 
             addToolOutput({
                 tool: "display_diagram",
@@ -462,7 +465,10 @@ Please fix the operations to avoid structural issues.`,
                 editDiagramOriginalXmlRef.current.delete(toolCall.toolCallId)
                 return
             }
-            onExport()
+            // Wait for draw.io to finish rendering the loaded XML before exporting
+            setTimeout(() => {
+                onExport()
+            }, 500)
             addToolOutput({
                 tool: "edit_diagram",
                 toolCallId: toolCall.toolCallId,
@@ -557,7 +563,10 @@ Please use display_diagram with corrected XML.`,
                 })
             } else {
                 // Save this newly assembled diagram version to history
-                onExport()
+                // Wait for draw.io to finish rendering the loaded XML before exporting
+                setTimeout(() => {
+                    onExport()
+                }, 500)
 
                 addToolOutput({
                     tool: "append_diagram",

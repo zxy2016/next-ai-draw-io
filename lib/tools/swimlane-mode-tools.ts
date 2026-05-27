@@ -143,5 +143,22 @@ export function getSwimlaneModeTools() {
                 return handleProposeSwimlaneIr(input)
             },
         },
+        suggest_replies: {
+            description: `Generate quick-reply suggestions for the user when asking a question.
+This tool should be used alongside a text response when you want to provide clickable button options for the user to quickly reply.
+
+CRITICAL INSTRUCTION:
+You MUST provide 2-4 distinct, realistic user responses based on the question you just asked.
+
+Example: If you ask "这个流程里除了直线和共享财务,还有员工本人提交吗?", you might suggest:
+{"suggestions": ["有,员工本人发起", "是的,而且需要附票据", "没有,财务直接发起"]}`,
+            inputSchema: z.object({
+                suggestions: z
+                    .array(z.string())
+                    .describe(
+                        "Array of 2-4 suggested reply strings for the user",
+                    ),
+            }),
+        },
     }
 }

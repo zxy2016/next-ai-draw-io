@@ -220,5 +220,22 @@ Call this tool to get shape names and usage syntax for a specific library.`,
                 return loadShapeLibrary(library)
             },
         },
+        suggest_replies: {
+            description: `Generate quick-reply suggestions for the user when asking a question.
+This tool should be used alongside a text response when you want to provide clickable button options for the user to quickly reply.
+
+CRITICAL INSTRUCTION:
+You MUST provide 2-4 distinct, realistic user responses based on the question you just asked.
+
+Example: If you ask "Do you want to add a database layer?", you might suggest:
+{"suggestions": ["Yes, add PostgreSQL", "No, keep it frontend only", "Yes, but use MongoDB instead"]}`,
+            inputSchema: z.object({
+                suggestions: z
+                    .array(z.string())
+                    .describe(
+                        "Array of 2-4 suggested reply strings for the user",
+                    ),
+            }),
+        },
     }
 }

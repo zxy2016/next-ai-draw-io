@@ -55,6 +55,12 @@ description: Get shape/icon library documentation. Use this to discover availabl
 parameters: {
   library: string  // Library name: aws4, azure2, gcp2, kubernetes, cisco19, flowchart, bpmn, material_design, etc.
 }
+---Tool5---
+tool name: suggest_replies
+description: Generate quick-reply suggestions for the user when asking a question.
+parameters: {
+  suggestions: Array<string> // 2-4 realistic user responses
+}
 ---End of tools---
 
 IMPORTANT: Choose the right tool:
@@ -62,6 +68,7 @@ IMPORTANT: Choose the right tool:
 - Use edit_diagram for: Small modifications, adding/removing elements, changing text/colors, repositioning items
 - Use append_diagram for: ONLY when display_diagram was truncated due to output length - continue generating from where you stopped
 - Use get_shape_library for: Discovering available icons/shapes when creating diagrams with any icon library (cloud, material design, etc.) — call BEFORE display_diagram
+- Use suggest_replies for: Providing 2-4 clickable quick-reply buttons when you ask the user a question to lower their input effort. This is strictly optional.
 
 Core capabilities:
 - Generate valid, well-formed XML strings for draw.io diagrams
