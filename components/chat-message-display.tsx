@@ -165,6 +165,12 @@ interface ChatMessageDisplayProps {
         template: import("@/lib/template-storage").Template,
     ) => void
     currentInput?: string
+    /**
+     * 由 swimlane mode 的 propose_swimlane_ir 工具结果驱动:每次模型成功
+     * 输出 IR 时,这里会被回传最新一份。供 chat-panel 里的 IREditor 抽屉
+     * 拿来编辑。free mode 下保持 null。
+     */
+    onSwimlaneIrUpdated?: (ir: unknown) => void
 }
 
 export function ChatMessageDisplay({
@@ -186,6 +192,7 @@ export function ChatMessageDisplay({
     onImproveWithSuggestions,
     onSendTemplate,
     currentInput = "",
+    onSwimlaneIrUpdated,
 }: ChatMessageDisplayProps) {
     const dict = useDictionary()
     const { chartXML, loadDiagram: onDisplayChart } = useDiagram()
@@ -680,6 +687,14 @@ export function ChatMessageDisplay({
                                 handleDisplayChart(xml, true)
                                 processedToolCalls.current.add(toolCallId)
                             }
+
+                            // 把模型 propose 出来的 IR 对象上报给 chat-panel,
+                            // 供 IREditor 抽屉编辑。output.ir 可能为 undefined
+                            // (旧消息历史 / 上游 SDK 行为变化),做防御性检查。
+                            const ir = (output as { ir?: unknown } | null)?.ir
+                            if (ir && onSwimlaneIrUpdated) {
+                                onSwimlaneIrUpdated(ir)
+                            }
                         }
                     }
                 })
@@ -690,7 +705,7 @@ export function ChatMessageDisplay({
         // The cleanup runs on every re-render (when messages changes),
         // which would cancel the timeout before it fires.
         // Let the timeouts complete naturally - they're harmless if component unmounts.
-    }, [messages, handleDisplayChart, chartXML])
+    }, [messages, handleDisplayChart, chartXML, onSwimlaneIrUpdated])
 
     return (
         <ScrollArea className="h-full w-full scrollbar-thin">

@@ -38,6 +38,8 @@ import { formatMessage } from "@/lib/i18n/utils"
 import { isPdfFile, isTextFile } from "@/lib/pdf-utils"
 import { sanitizeMessages } from "@/lib/session-storage"
 import { STORAGE_KEYS } from "@/lib/storage"
+// SwimlaneIR 同名导出: 既是 zod schema (运行时校验) 也是 type (z.infer 推导)
+import { SwimlaneIR } from "@/lib/swimlane/ir/schema"
 import type { UrlData } from "@/lib/url-utils"
 import { type FileData, useFileProcessor } from "@/lib/use-file-processor"
 import { useQuotaManager } from "@/lib/use-quota-manager"
@@ -185,6 +187,11 @@ export default function ChatPanel({
     // Persisted across reloads in localStorage; toggle button in chat header.
     // 默认 swimlane —— 这个 fork 的主要用户是同事画泳道图,而非通用绘图。
     const [flowMode, setFlowMode] = useState<"free" | "swimlane">("swimlane")
+
+    // 最新一份"模型 propose 出来"的 IR,供 IREditor 抽屉编辑用。
+    // 由 chat-message-display 在 propose_swimlane_ir 的 output-available
+    // 状态时回传 setCurrentIr。模式切换 / new chat 时清空。
+    const [currentIr, setCurrentIr] = useState<SwimlaneIR | null>(null)
 
     // Restore input from sessionStorage on mount (when ChatPanel remounts due to key change)
     useEffect(() => {
@@ -962,6 +969,7 @@ export default function ChatPanel({
         setDiagramHistory([])
         setValidationStates({}) // Clear validation states to prevent memory leak
         handleFileChange([]) // Use handleFileChange to also clear pdfData
+        setCurrentIr(null) // 清掉 swimlane mode 的 IR 缓存
         setUrlData(new Map())
         const newSessionId = `session-${Date.now()}-${Math.random()
             .toString(36)
@@ -1001,12 +1009,31 @@ export default function ChatPanel({
         // Clear conversation so old display_diagram / propose_swimlane_ir
         // history doesn't confuse the model under the new tool set
         setMessages([])
+        setCurrentIr(null) // 切回 free 模式时清空 IR 缓存
         toast.success(
             next === "swimlane"
                 ? "已切换到泳道图模式(Swimlane)"
                 : "已切换到自由模式(Free)",
         )
     }, [flowMode, setMessages])
+
+    // 由 ChatMessageDisplay 在收到 propose_swimlane_ir 的 output-available
+    // 时调用,把模型 propose 的 IR 缓存到 currentIr。这里再做一次 Zod 校验,
+    // 因为消息历史可能跨版本(老 session 还原回来时 schema 可能轻微变化),
+    // 不能直接信任 part.output.ir 一定符合当前 schema。
+    const handleSwimlaneIrUpdated = useCallback((ir: unknown) => {
+        const parsed = SwimlaneIR.safeParse(ir)
+        if (parsed.success) {
+            setCurrentIr(parsed.data)
+        } else {
+            // 不符合 schema 的 IR 直接忽略 —— 不更新 currentIr,
+            // IREditor 抽屉里的旧值保持不变(可能是上一轮的)。
+            console.warn(
+                "[chat-panel] Received IR from tool result failed Zod parse:",
+                parsed.error.issues.slice(0, 3),
+            )
+        }
+    }, [])
 
     // Handle sending a template directly (called from TemplatePanel)
     const handleSendTemplate = useCallback(
@@ -1463,6 +1490,7 @@ export default function ChatPanel({
                     onImproveWithSuggestions={handleImproveWithSuggestions}
                     onSendTemplate={handleSendTemplate}
                     currentInput={input}
+                    onSwimlaneIrUpdated={handleSwimlaneIrUpdated}
                 />
             </main>
 

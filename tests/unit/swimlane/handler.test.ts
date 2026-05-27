@@ -14,6 +14,14 @@ describe("handleProposeSwimlaneIr", () => {
         expect(result.stats.nodes).toBe(procurementExample.nodes.length)
     })
 
+    it("返回结果包含已校验的 IR 对象,供前端 IREditor 使用", () => {
+        const result = handleProposeSwimlaneIr(procurementExample)
+        expect(result.ir).toBeDefined()
+        expect(result.ir.title).toBe(procurementExample.title)
+        expect(result.ir.roles).toEqual(procurementExample.roles)
+        expect(result.ir.nodes.length).toBe(procurementExample.nodes.length)
+    })
+
     it("没有 start 节点时抛 SwimlaneIrValidationError", () => {
         const bad = {
             ...procurementExample,

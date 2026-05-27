@@ -1,4 +1,5 @@
 import "server-only"
+import type { SwimlaneIR as SwimlaneIRType } from "@/lib/swimlane/ir/schema"
 import { SwimlaneIR } from "@/lib/swimlane/ir/schema"
 import { irToXml } from "@/lib/swimlane/xml/engine"
 import { validateDrawioXml } from "@/lib/swimlane/xml/validator"
@@ -33,6 +34,11 @@ export interface ProposeSwimlaneIrResult {
     xml: string
     /** 简短的图标题,可用于前端展示 */
     title: string
+    /**
+     * 已通过 Zod 业务规则校验的 IR 对象。
+     * 前端 IREditor 抽屉编辑用,也用于多轮对话时把"最新版"IR 重新喂回模型。
+     */
+    ir: SwimlaneIRType
     /** 节点/边/角色/阶段的简单统计 */
     stats: {
         roles: number
@@ -78,6 +84,7 @@ export function handleProposeSwimlaneIr(
     return {
         xml,
         title: ir.title,
+        ir,
         stats: {
             roles: ir.roles.length,
             phases: ir.phases.length,
