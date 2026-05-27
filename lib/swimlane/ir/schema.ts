@@ -74,7 +74,7 @@ export const SwimlaneIR = z
          * 例如:"验真不通过的发票不得进入三单匹配"、"金额超 10w 必须财务总监复核"。
          * 渲染到图例下方,空时不渲染。
          */
-        rules: z.array(z.string().min(1).max(120)).max(8).optional(),
+        rules: z.array(z.string().min(1).max(120)).optional(),
     })
     // 业务规则 1: 节点必须引用已存在的 role/phase
     .refine(

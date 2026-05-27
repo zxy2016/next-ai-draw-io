@@ -365,7 +365,6 @@ function RulesView({
     }
 
     function addRule() {
-        if (rules.length >= 8) return
         onChange({ ...ir, rules: [...rules, "新规则"] })
     }
 
@@ -377,7 +376,7 @@ function RulesView({
     return (
         <div className="space-y-2">
             <p className="text-[11px] text-muted-foreground">
-                业务规则会渲染到图例下方。空规则保存时会被自动删除,最多 8 条。
+                业务规则会渲染到图例下方。空规则保存时会被自动删除。
             </p>
             {rules.length === 0 && (
                 <div className="italic text-muted-foreground/60">
@@ -407,17 +406,15 @@ function RulesView({
                     </button>
                 </div>
             ))}
-            {rules.length < 8 && (
-                <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={addRule}
-                    className="h-7 px-2 text-[11px] text-primary hover:text-primary"
-                >
-                    + 新增规则
-                </Button>
-            )}
+            <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={addRule}
+                className="h-7 px-2 text-[11px] text-primary hover:text-primary"
+            >
+                + 新增规则
+            </Button>
         </div>
     )
 }
