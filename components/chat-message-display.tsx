@@ -724,6 +724,18 @@ export function ChatMessageDisplay({
             ) : messages.length === 0 ? null : (
                 <div className="py-4 px-4 space-y-4">
                     {messages.map((message, messageIndex) => {
+                        // 合成消息(如 IR 手动编辑的隐式通知)不在 UI 里展示。
+                        // 它仍然存在于 messages 数组中,会随下一次 sendMessage
+                        // 一起发给 LLM,让模型感知改动 —— 但前端用户看不到这条噪音。
+                        if (
+                            (
+                                message.metadata as
+                                    | { synthetic?: string }
+                                    | undefined
+                            )?.synthetic
+                        ) {
+                            return null
+                        }
                         const userMessageText =
                             message.role === "user"
                                 ? getMessageTextContent(message)
@@ -734,12 +746,23 @@ export function ChatMessageDisplay({
                                 messages
                                     .slice(messageIndex + 1)
                                     .every((m) => m.role !== "assistant"))
+                        // "最后一条 user 消息"判断时忽略 synthetic 消息,这样:
+                        // 用户改 IR 后,之前的真实 user 消息仍然显示编辑按钮(注入的
+                        // synthetic 消息不算"真正的下一条 user 输入")
                         const isLastUserMessage =
                             message.role === "user" &&
                             (messageIndex === messages.length - 1 ||
                                 messages
                                     .slice(messageIndex + 1)
-                                    .every((m) => m.role !== "user"))
+                                    .every(
+                                        (m) =>
+                                            m.role !== "user" ||
+                                            (
+                                                m.metadata as
+                                                    | { synthetic?: string }
+                                                    | undefined
+                                            )?.synthetic,
+                                    ))
                         const isEditing = editingMessageId === message.id
                         // Skip animation for loaded messages (from session restore)
                         const isRestoredMessage =

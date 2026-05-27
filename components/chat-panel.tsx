@@ -1070,10 +1070,13 @@ export default function ChatPanel({
                 onDisplayChart(xml)
                 setCurrentIr(parsed.data)
 
-                // 注入虚拟 user 消息让模型感知改动 —— 不发请求,等用户下次输入时一起带
+                // 注入虚拟 user 消息让模型感知改动 —— 不发请求,等用户下次输入时一起带。
+                // 用 metadata.synthetic 标记,UI 据此跳过"编辑"按钮渲染,handleEditMessage
+                // 也据此跳过(因为没有对应的 xmlSnapshot)。
                 const noteMsg = {
                     id: `user-ir-edit-${Date.now()}`,
                     role: "user" as const,
+                    metadata: { synthetic: "ir-edit" as const },
                     parts: [
                         {
                             type: "text" as const,
@@ -1343,6 +1346,15 @@ ${JSON.stringify(parsed.data, null, 2)}
 
         const message = messages[messageIndex]
         if (!message || message.role !== "user") return
+
+        // 合成消息(IR 手动编辑通知等)没有对应的 xmlSnapshot,也不应该被
+        // 用户"重发" —— 直接跳过。正常路径下 UI 也不渲染它的编辑按钮,这层
+        // 防御是给非 UI 触发路径(快捷键、自动化等)用的安全网。
+        if (
+            (message.metadata as { synthetic?: string } | undefined)?.synthetic
+        ) {
+            return
+        }
 
         // Get the saved XML snapshot for this user message
         const savedXml = xmlSnapshotsRef.current.get(messageIndex)
