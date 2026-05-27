@@ -219,6 +219,50 @@ function parseIntSafe(
 }
 
 /**
+ * 创建一个 fetch 拦截器,在 outbound POST 请求的 JSON body 里 deep-merge 指定字段。
+ *
+ * 用途:给 OpenAI 兼容协议传 typed-schema 不支持的扩展字段。最典型场景是
+ * vLLM 部署的 DeepSeek/Qwen 系列模型,通过 chat_template_kwargs.thinking
+ * 这类 chat template 扩展字段开启思考模式 —— OpenAI 标准 schema 不接受,
+ * 必须在请求拦截层注入。
+ *
+ * 安全性:只处理 string body + JSON parse 成功的情况;失败时原样透传不抛错。
+ */
+function createBodyMergingFetch(
+    overrides: Record<string, unknown>,
+): typeof fetch {
+    return async function mergedFetch(input, init) {
+        if (init?.body && typeof init.body === "string") {
+            try {
+                const parsed = JSON.parse(init.body) as Record<string, unknown>
+                // 深合并:对象类字段合并,标量字段被 overrides 覆盖
+                for (const [key, value] of Object.entries(overrides)) {
+                    if (
+                        value &&
+                        typeof value === "object" &&
+                        !Array.isArray(value) &&
+                        parsed[key] &&
+                        typeof parsed[key] === "object" &&
+                        !Array.isArray(parsed[key])
+                    ) {
+                        parsed[key] = {
+                            ...(parsed[key] as Record<string, unknown>),
+                            ...(value as Record<string, unknown>),
+                        }
+                    } else {
+                        parsed[key] = value
+                    }
+                }
+                init = { ...init, body: JSON.stringify(parsed) }
+            } catch {
+                // body 不是合法 JSON(如 multipart 上传),原样透传
+            }
+        }
+        return globalThis.fetch(input, init)
+    }
+}
+
+/**
  * Build provider-specific options from environment variables
  * Supports various AI SDK providers with their unique configuration options
  *
@@ -236,6 +280,12 @@ function parseIntSafe(
  * - BEDROCK_REASONING_BUDGET_TOKENS: Bedrock Claude reasoning budget in tokens (1024-64000)
  * - BEDROCK_REASONING_EFFORT: Bedrock Nova reasoning effort (low/medium/high)
  * - OLLAMA_ENABLE_THINKING: Enable Ollama thinking mode (set to "true")
+ * - DEEPSEEK_ENABLE_THINKING: Enable DeepSeek thinking via vLLM chat template
+ *   (set to "true"). Injects `chat_template_kwargs.thinking = true` into the
+ *   chat completions request body. Required for self-hosted vLLM deployments
+ *   of DeepSeek-V4-Flash / DeepSeek-V3.x where the chat template gates
+ *   thinking on this flag. Only activates when provider resolves to "openai"
+ *   AND modelId contains "deepseek" (case-insensitive).
  */
 function buildProviderOptions(
     provider: ProviderName,
@@ -820,7 +870,33 @@ export function getAIModel(overrides?: ClientOverrides): ModelConfig {
             if (baseURL) {
                 // Custom base URL = third-party proxy, use Chat Completions API
                 // for compatibility (most proxies don't support /responses endpoint)
-                const customOpenAI = createOpenAI({ apiKey, baseURL })
+
+                // DeepSeek thinking via vLLM chat template:
+                // 当目标是 vLLM 部署的 DeepSeek 系列时,通过 fetch 拦截器在
+                // request body 里注入 chat_template_kwargs.thinking = true。
+                // vLLM 收到这个字段后,chat template 会在 prompt 里激活思考段,
+                // 模型的思考内容会通过 delta.reasoning_content 流回。
+                // AI SDK 6 + sendReasoning: true 已经能把 reasoning_content 转
+                // 成标准 reasoning part 推给前端,无需额外渲染逻辑。
+                const enableDeepseekThinking =
+                    process.env.DEEPSEEK_ENABLE_THINKING === "true" &&
+                    modelId.toLowerCase().includes("deepseek")
+
+                const customOpenAI = enableDeepseekThinking
+                    ? createOpenAI({
+                          apiKey,
+                          baseURL,
+                          fetch: createBodyMergingFetch({
+                              chat_template_kwargs: { thinking: true },
+                          }),
+                      })
+                    : createOpenAI({ apiKey, baseURL })
+
+                if (enableDeepseekThinking) {
+                    console.log(
+                        `[DeepSeek Thinking] ENABLED for model: ${modelId} via chat_template_kwargs.thinking`,
+                    )
+                }
                 model = customOpenAI.chat(modelId)
             } else if (overrides?.apiKey) {
                 // Custom API key but official OpenAI endpoint, use Responses API
