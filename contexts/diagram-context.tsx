@@ -15,9 +15,15 @@ import {
 interface DiagramContextType {
     chartXML: string
     latestSvg: string
-    diagramHistory: { svg: string; xml: string }[]
-    setDiagramHistory: (history: { svg: string; xml: string }[]) => void
-    loadDiagram: (chart: string, skipValidation?: boolean) => string | null
+    diagramHistory: { svg: string; xml: string; timestamp?: number }[]
+    setDiagramHistory: (
+        history: { svg: string; xml: string; timestamp?: number }[],
+    ) => void
+    loadDiagram: (
+        chart: string,
+        skipValidation?: boolean,
+        isRestore?: boolean,
+    ) => string | null
     handleExport: () => void
     handleExportWithoutHistory: () => void
     resolverRef: React.MutableRefObject<((value: string) => void) | null>
@@ -46,7 +52,7 @@ export function DiagramProvider({ children }: { children: React.ReactNode }) {
     const [chartXML, setChartXML] = useState<string>("")
     const [latestSvg, setLatestSvg] = useState<string>("")
     const [diagramHistory, setDiagramHistory] = useState<
-        { svg: string; xml: string }[]
+        { svg: string; xml: string; timestamp?: number }[]
     >([])
     const [isDrawioReady, setIsDrawioReady] = useState(false)
     const [showSaveDialog, setShowSaveDialog] = useState(false)
@@ -57,6 +63,8 @@ export function DiagramProvider({ children }: { children: React.ReactNode }) {
     const pngResolverRef = useRef<((value: string) => void) | null>(null)
     // Track if we're expecting an export for history (user-initiated)
     const expectHistoryExportRef = useRef<boolean>(false)
+    // Track if the diagram was modified since last history export
+    const isDiagramDirtyRef = useRef<boolean>(true)
     // Track latest chartXML for restoration after remount
     const chartXMLRef = useRef<string>("")
 
@@ -169,6 +177,7 @@ export function DiagramProvider({ children }: { children: React.ReactNode }) {
     const loadDiagram = (
         chart: string,
         skipValidation?: boolean,
+        isRestore?: boolean,
     ): string | null => {
         let xmlToLoad = chart
 
@@ -194,6 +203,11 @@ export function DiagramProvider({ children }: { children: React.ReactNode }) {
 
         // Keep chartXML in sync even when diagrams are injected (e.g., display_diagram tool)
         setChartXML(xmlToLoad)
+
+        // Mark as dirty unless this is a restore from history
+        if (!isRestore) {
+            isDiagramDirtyRef.current = true
+        }
 
         if (drawioRef.current) {
             drawioRef.current.load({
@@ -233,27 +247,32 @@ export function DiagramProvider({ children }: { children: React.ReactNode }) {
         // Limit to 20 entries to prevent memory leaks during long sessions
         const MAX_HISTORY_SIZE = 20
         if (expectHistoryExportRef.current) {
-            setDiagramHistory((prev) => {
-                // Do not add if the diagram is empty (blank version)
-                if (!isRealDiagram(extractedXML)) {
-                    return prev
-                }
+            // Only save to history if the diagram has been modified (or it's the first time)
+            if (isDiagramDirtyRef.current || diagramHistory.length === 0) {
+                setDiagramHistory((prev) => {
+                    // Do not add if the diagram is empty (blank version)
+                    if (!isRealDiagram(extractedXML)) {
+                        return prev
+                    }
 
-                // Do not add if the XML is exactly the same as any existing item in history
-                if (prev.some((item) => item.xml === extractedXML)) {
-                    return prev
-                }
+                    // Do not add if the XML is exactly the same as any existing item in history
+                    if (prev.some((item) => item.xml === extractedXML)) {
+                        return prev
+                    }
 
-                const newHistory = [
-                    ...prev,
-                    {
-                        svg: data.data,
-                        xml: extractedXML,
-                    },
-                ]
-                // Keep only the last MAX_HISTORY_SIZE entries (circular buffer)
-                return newHistory.slice(-MAX_HISTORY_SIZE)
-            })
+                    const newHistory = [
+                        ...prev,
+                        {
+                            svg: data.data,
+                            xml: extractedXML,
+                            timestamp: Date.now(),
+                        },
+                    ]
+                    // Keep only the last MAX_HISTORY_SIZE entries (circular buffer)
+                    return newHistory.slice(-MAX_HISTORY_SIZE)
+                })
+                isDiagramDirtyRef.current = false // Reset dirty flag
+            }
             expectHistoryExportRef.current = false
         }
 
@@ -270,6 +289,10 @@ export function DiagramProvider({ children }: { children: React.ReactNode }) {
         if (!isDrawioReady && isRealDiagram(chartXML)) {
             return
         }
+
+        // Mark that the diagram was modified
+        isDiagramDirtyRef.current = true
+
         setChartXML(data.xml)
     }
 

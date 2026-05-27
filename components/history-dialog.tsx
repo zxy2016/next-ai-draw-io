@@ -35,8 +35,8 @@ export function HistoryDialog({
 
     const handleConfirmRestore = () => {
         if (selectedIndex !== null) {
-            // Skip validation for trusted history snapshots
-            onDisplayChart(diagramHistory[selectedIndex].xml, true)
+            // Skip validation for trusted history snapshots, pass true for isRestore
+            onDisplayChart(diagramHistory[selectedIndex].xml, true, true)
             handleClose()
         }
     }
@@ -77,7 +77,11 @@ export function HistoryDialog({
                                     />
                                 </div>
                                 <div className="text-xs text-center mt-1 text-gray-500">
-                                    {dict.history.version} {index + 1}
+                                    {item.timestamp
+                                        ? new Date(
+                                              item.timestamp,
+                                          ).toLocaleTimeString()
+                                        : `${dict.history.version} ${index + 1}`}
                                 </div>
                             </div>
                         ))}
