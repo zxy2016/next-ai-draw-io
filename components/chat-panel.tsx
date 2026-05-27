@@ -362,6 +362,54 @@ export default function ChatPanel({
         }
     }, [])
 
+    // Store sendChatMessage in ref for use in callbacks without dependency loops
+    const sendChatMessageRef = useRef<
+        | ((
+              parts: any,
+              xml: string,
+              previousXml: string,
+              sessionId: string,
+          ) => void)
+        | null
+    >(null)
+
+    // Callback to handle quick reply suggestions
+    const handleSuggestionClick = useCallback(
+        async (suggestion: string) => {
+            if (!sendChatMessageRef.current) return
+
+            try {
+                let chartXml = await onFetchChart()
+                chartXml = formatXML(chartXml)
+
+                chartXMLRef.current = chartXml
+
+                const parts = [{ type: "text", text: suggestion }]
+
+                const snapshotKeys = Array.from(
+                    xmlSnapshotsRef.current.keys(),
+                ).sort((a, b) => b - a)
+                const previousXml =
+                    snapshotKeys.length > 0
+                        ? xmlSnapshotsRef.current.get(snapshotKeys[0]) || ""
+                        : ""
+
+                const messageIndex = messagesRef.current.length
+                xmlSnapshotsRef.current.set(messageIndex, chartXml)
+
+                sendChatMessageRef.current(
+                    parts,
+                    chartXml,
+                    previousXml,
+                    sessionId,
+                )
+            } catch (error) {
+                console.error("Error submitting suggestion:", error)
+            }
+        },
+        [onFetchChart, sessionId],
+    )
+
     // VLM validation hook using AI SDK's useObject
     const { validateWithFallback } = useValidateDiagram()
 
@@ -393,6 +441,13 @@ export default function ChatPanel({
             api: getApiEndpoint("/api/chat"),
         }),
         onToolCall: async ({ toolCall }) => {
+            if (toolCall.toolName === "suggest_replies") {
+                addToolOutput({
+                    toolCallId: toolCall.toolCallId,
+                    result: { success: true },
+                } as any)
+                return
+            }
             await handleToolCall({ toolCall }, addToolOutput)
         },
         onError: (error) => {
@@ -1179,7 +1234,6 @@ ${JSON.stringify(parsed.data, null, 2)}
         stop()
     }, [messages, addToolOutput, stop])
 
-    // Send chat message with headers
     const sendChatMessage = (
         parts: any,
         xml: string,
@@ -1242,6 +1296,11 @@ ${JSON.stringify(parsed.data, null, 2)}
             },
         )
     }
+
+    // Update the ref to the latest sendChatMessage
+    useEffect(() => {
+        sendChatMessageRef.current = sendChatMessage
+    }, [sendChatMessage])
 
     // Process files and append content to user text (handles PDF, text, and optionally images)
     const processFilesAndAppendContent = async (
@@ -1588,6 +1647,7 @@ ${JSON.stringify(parsed.data, null, 2)}
                     onSendTemplate={handleSendTemplate}
                     currentInput={input}
                     onSwimlaneIrUpdated={handleSwimlaneIrUpdated}
+                    onSuggestionClick={handleSuggestionClick}
                 />
             </main>
 

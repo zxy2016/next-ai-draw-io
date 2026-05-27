@@ -294,8 +294,31 @@ async function handleChatRequest(req: Request): Promise<Response> {
 ${userInputText}
 """`
 
+    // === SUGGEST_REPLIES STRIPPING START ===
+    // 在 convertToModelMessages 之前，从原始 UI 消息中剥离 suggest_replies 的
+    // tool-invocation parts。必须在此处处理，因为 convertToModelMessages 会把
+    // toolName 变形（如 "invocation"），导致转换后按名称过滤完全无效。
+    // 剥离的目的：让 LLM 在多轮对话中看不到历史 suggest_replies 调用，
+    // 避免模型因为"已经调用过"而在后续轮次偷懒不再调用。
+    const messagesWithoutSuggestReplies = messages.map((msg: any) => {
+        if (!msg.parts || !Array.isArray(msg.parts)) return msg
+        const filteredParts = msg.parts.filter((part: any) => {
+            // 过滤 tool-invocation 类型中 toolName 为 suggest_replies 的 parts
+            if (part.type === "tool-invocation") {
+                const toolName = part.toolInvocation?.toolName || part.toolName
+                if (toolName === "suggest_replies") return false
+            }
+            return true
+        })
+        // 如果过滤后 parts 为空，保留消息但只留文本部分（避免空消息）
+        return { ...msg, parts: filteredParts }
+    })
+    // === SUGGEST_REPLIES STRIPPING END ===
+
     // Convert UIMessages to ModelMessages and add system message
-    const modelMessages = await convertToModelMessages(messages)
+    const modelMessages = await convertToModelMessages(
+        messagesWithoutSuggestReplies,
+    )
 
     // DEBUG: Log incoming messages structure
     console.log("[route.ts] Incoming messages count:", messages.length)
@@ -347,7 +370,7 @@ ${userInputText}
     // Bedrock API rejects messages where toolUse.input is not a valid JSON object
     enhancedMessages = enhancedMessages
         .map((msg: any) => {
-            if (msg.role !== "assistant" || !Array.isArray(msg.content)) {
+            if (!msg.content || !Array.isArray(msg.content)) {
                 return msg
             }
             const filteredContent = msg.content.filter((part: any) => {

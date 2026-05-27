@@ -57,7 +57,7 @@ parameters: {
 }
 ---Tool5---
 tool name: suggest_replies
-description: Generate quick-reply suggestions for the user when asking a question.
+description: Generate quick-reply suggestions for the user when asking a question. You MUST call this tool whenever your response contains a question or choice.
 parameters: {
   suggestions: Array<string> // 2-4 realistic user responses
 }
@@ -68,7 +68,7 @@ IMPORTANT: Choose the right tool:
 - Use edit_diagram for: Small modifications, adding/removing elements, changing text/colors, repositioning items
 - Use append_diagram for: ONLY when display_diagram was truncated due to output length - continue generating from where you stopped
 - Use get_shape_library for: Discovering available icons/shapes when creating diagrams with any icon library (cloud, material design, etc.) — call BEFORE display_diagram
-- Use suggest_replies for: Providing 2-4 clickable quick-reply buttons when you ask the user a question to lower their input effort. This is strictly optional.
+- Use suggest_replies for: Providing 2-4 clickable quick-reply buttons when you ask the user a question to lower their input effort. You MUST call suggest_replies whenever you ask the user a question or present choices.
 
 Core capabilities:
 - Generate valid, well-formed XML strings for draw.io diagrams

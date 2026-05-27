@@ -13,6 +13,7 @@ import {
     Link,
     Pencil,
     RotateCcw,
+    Sparkles,
     ThumbsDown,
     ThumbsUp,
     X,
@@ -171,6 +172,7 @@ interface ChatMessageDisplayProps {
      * 拿来编辑。free mode 下保持 null。
      */
     onSwimlaneIrUpdated?: (ir: unknown) => void
+    onSuggestionClick?: (suggestion: string) => void
 }
 
 export function ChatMessageDisplay({
@@ -193,6 +195,7 @@ export function ChatMessageDisplay({
     onSendTemplate,
     currentInput = "",
     onSwimlaneIrUpdated,
+    onSuggestionClick,
 }: ChatMessageDisplayProps) {
     const dict = useDictionary()
     const { chartXML, loadDiagram: onDisplayChart } = useDiagram()
@@ -1057,14 +1060,99 @@ export function ChatMessageDisplay({
                                                         const toolPart = group
                                                             .parts[0] as ToolPartLike
                                                         const toolCallId =
-                                                            toolPart.toolCallId
-                                                        const isDisplayDiagram =
+                                                            toolPart.toolCallId ||
+                                                            (toolPart as any)
+                                                                .toolInvocation
+                                                                ?.toolCallId
+
+                                                        let actualToolName =
+                                                            toolPart.type?.replace(
+                                                                "tool-",
+                                                                "",
+                                                            )
+                                                        let toolInput =
+                                                            toolPart.input as
+                                                                | Record<
+                                                                      string,
+                                                                      any
+                                                                  >
+                                                                | undefined
+                                                        if (
                                                             toolPart.type ===
-                                                            "tool-display_diagram"
+                                                                "tool-invocation" &&
+                                                            (toolPart as any)
+                                                                .toolInvocation
+                                                        ) {
+                                                            actualToolName = (
+                                                                toolPart as any
+                                                            ).toolInvocation
+                                                                .toolName
+                                                            toolInput = (
+                                                                toolPart as any
+                                                            ).toolInvocation
+                                                                .args
+                                                        }
+
+                                                        const isDisplayDiagram =
+                                                            actualToolName ===
+                                                            "display_diagram"
+                                                        const isSuggestReplies =
+                                                            actualToolName ===
+                                                            "suggest_replies"
                                                         const validationState =
                                                             validationStates[
                                                                 toolCallId
                                                             ]
+
+                                                        if (isSuggestReplies) {
+                                                            if (
+                                                                !isLastAssistantMessage
+                                                            )
+                                                                return null
+                                                            const suggestions =
+                                                                toolInput?.suggestions as
+                                                                    | string[]
+                                                                    | undefined
+                                                            if (
+                                                                suggestions &&
+                                                                suggestions.length >
+                                                                    0
+                                                            ) {
+                                                                return (
+                                                                    <div
+                                                                        key={`${message.id}-tool-${group.startIndex}`}
+                                                                        className="flex flex-wrap gap-2.5 mt-4"
+                                                                    >
+                                                                        {suggestions.map(
+                                                                            (
+                                                                                suggestion,
+                                                                                idx,
+                                                                            ) => (
+                                                                                <button
+                                                                                    key={
+                                                                                        idx
+                                                                                    }
+                                                                                    onClick={() =>
+                                                                                        onSuggestionClick?.(
+                                                                                            suggestion,
+                                                                                        )
+                                                                                    }
+                                                                                    className="group flex items-start gap-2 px-4 py-2.5 text-[13px] font-medium rounded-2xl border border-primary/15 bg-gradient-to-b from-primary/5 to-transparent text-foreground/80 hover:text-primary hover:border-primary/30 hover:bg-primary/10 hover:shadow-sm transition-all duration-300 active:scale-[0.98] max-w-[90%]"
+                                                                                >
+                                                                                    <Sparkles className="w-4 h-4 mt-0.5 shrink-0 text-primary/50 group-hover:text-primary transition-colors" />
+                                                                                    <span className="leading-relaxed text-left">
+                                                                                        {
+                                                                                            suggestion
+                                                                                        }
+                                                                                    </span>
+                                                                                </button>
+                                                                            ),
+                                                                        )}
+                                                                    </div>
+                                                                )
+                                                            }
+                                                            return null
+                                                        }
 
                                                         return (
                                                             <div

@@ -65,11 +65,19 @@ export function ToolCallCard({
     copyFailedToolCallId,
     dict,
 }: ToolCallCardProps) {
-    const callId = part.toolCallId
-    const { state, input, output } = part
+    let callId = part.toolCallId
+    let { state, input, output } = part
+    let toolName = part.type?.replace("tool-", "")
+
+    if (part.type === "tool-invocation" && (part as any).toolInvocation) {
+        const inv = (part as any).toolInvocation
+        callId = callId || inv.toolCallId
+        toolName = inv.toolName
+        input = input || inv.args
+    }
+
     // Default to expanded for all states (user can manually collapse if needed)
     const isExpanded = expandedTools[callId] ?? true
-    const toolName = part.type?.replace("tool-", "")
     const isCopied = copiedToolCallId === callId
 
     const toggleExpanded = () => {
