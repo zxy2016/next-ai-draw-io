@@ -113,7 +113,7 @@ function SettingsContent({
         () => getStoredAccessCodeRequired() ?? false,
     )
     const [currentLang, setCurrentLang] = useState("en")
-    const [sendShortcut, setSendShortcut] = useState("ctrl-enter")
+    const [sendShortcut, setSendShortcut] = useState("enter")
 
     // Panel visibility state
     const [showRecentChats, setShowRecentChats] = useState(true)
@@ -179,7 +179,7 @@ function SettingsContent({
             const storedSendShortcut = localStorage.getItem(
                 STORAGE_KEYS.sendShortcut,
             )
-            setSendShortcut(storedSendShortcut || "ctrl-enter")
+            setSendShortcut(storedSendShortcut || "enter")
 
             setShowRecentChats(
                 localStorage.getItem(STORAGE_KEYS.showRecentChats) !== "false",

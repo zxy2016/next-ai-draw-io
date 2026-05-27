@@ -240,7 +240,7 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
         const [showUrlDialog, setShowUrlDialog] = useState(false)
         const [showSaveAsTemplate, setShowSaveAsTemplate] = useState(false)
         const [isExtractingUrl, setIsExtractingUrl] = useState(false)
-        const [sendShortcut, setSendShortcut] = useState("ctrl-enter")
+        const [sendShortcut, setSendShortcut] = useState("enter")
         // Allow retry when there's an error (even if status is still "streaming" or "submitted")
         const isDisabled =
             (status === "streaming" || status === "submitted") && !error
