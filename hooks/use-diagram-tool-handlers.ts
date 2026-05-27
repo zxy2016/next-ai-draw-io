@@ -360,6 +360,10 @@ ${finalXml}
                     "[display_diagram] Adding tool output with state: output-available",
                 )
             }
+
+            // Save this new diagram version to history
+            onExport()
+
             addToolOutput({
                 tool: "display_diagram",
                 toolCallId: toolCall.toolCallId,
@@ -552,6 +556,9 @@ ${finalXml.substring(0, 2000)}...
 Please use display_diagram with corrected XML.`,
                 })
             } else {
+                // Save this newly assembled diagram version to history
+                onExport()
+
                 addToolOutput({
                     tool: "append_diagram",
                     toolCallId: toolCall.toolCallId,
