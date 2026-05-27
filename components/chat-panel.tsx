@@ -181,9 +181,10 @@ export default function ChatPanel({
     const [vlmValidationEnabled, setVlmValidationEnabled] = useState(false)
     const [customSystemMessage, setCustomSystemMessage] = useState("")
     const [shouldFocusInput, setShouldFocusInput] = useState(false)
-    // Flow mode: 'free' (default generic draw.io) or 'swimlane' (IR-driven 2D matrix)
-    // Persisted across reloads in localStorage; toggle button in chat header
-    const [flowMode, setFlowMode] = useState<"free" | "swimlane">("free")
+    // Flow mode: 'swimlane' (default IR-driven 2D matrix) or 'free' (generic draw.io)
+    // Persisted across reloads in localStorage; toggle button in chat header.
+    // 默认 swimlane —— 这个 fork 的主要用户是同事画泳道图,而非通用绘图。
+    const [flowMode, setFlowMode] = useState<"free" | "swimlane">("swimlane")
 
     // Restore input from sessionStorage on mount (when ChatPanel remounts due to key change)
     useEffect(() => {
@@ -193,12 +194,14 @@ export default function ChatPanel({
         }
     }, [])
 
-    // Restore flowMode from localStorage on mount
+    // Restore flowMode from localStorage on mount.
+    // 显式用户偏好优先于默认值:若用户上次主动切到 free,这次保持 free
     useEffect(() => {
         const stored = localStorage.getItem(STORAGE_FLOW_MODE_KEY)
-        if (stored === "swimlane") {
-            setFlowMode("swimlane")
+        if (stored === "free") {
+            setFlowMode("free")
         }
+        // stored === "swimlane" 或 null 都走 useState 初始值 "swimlane"
     }, [])
 
     // Load VLM validation setting from localStorage on mount
