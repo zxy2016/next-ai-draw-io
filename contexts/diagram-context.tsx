@@ -8,6 +8,7 @@ import type { ExportFormat } from "@/components/save-dialog"
 import { getApiEndpoint } from "@/lib/base-path"
 import {
     extractDiagramXML,
+    extractRootContent,
     isRealDiagram,
     validateAndFixXml,
 } from "../lib/utils"
@@ -290,8 +291,14 @@ export function DiagramProvider({ children }: { children: React.ReactNode }) {
             return
         }
 
-        // Mark that the diagram was modified
-        isDiagramDirtyRef.current = true
+        // Extract <root> content to ignore view state changes (pan, zoom)
+        const currentRoot = extractRootContent(chartXML)
+        const newRoot = extractRootContent(data.xml)
+
+        // Mark that the diagram was modified only if the actual content changed
+        if (!currentRoot || !newRoot || currentRoot !== newRoot) {
+            isDiagramDirtyRef.current = true
+        }
 
         setChartXML(data.xml)
     }

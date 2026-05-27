@@ -28,6 +28,18 @@ export function isRealDiagram(xml: string | undefined | null): boolean {
     return !!xml && xml.length > MIN_REAL_DIAGRAM_LENGTH
 }
 
+/**
+ * Extract the <root> element content from a draw.io diagram XML.
+ * Useful for checking if the actual diagram content has changed, ignoring view state (pan/zoom).
+ */
+export function extractRootContent(
+    xml: string | undefined | null,
+): string | null {
+    if (!xml) return null
+    const match = xml.match(/<root>([\s\S]*?)<\/root>/)
+    return match ? match[1] : null
+}
+
 // ============================================================================
 // XML Validation/Fix Constants
 // ============================================================================
