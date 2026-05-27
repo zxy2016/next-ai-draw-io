@@ -1037,33 +1037,44 @@ export function getAIModel(overrides?: ClientOverrides): ModelConfig {
                     process.env.DEEPSEEK_ENABLE_THINKING === "true" &&
                     modelId.toLowerCase().includes("deepseek")
 
-                const customOpenAI = enableDeepseekThinking
-                    ? createOpenAI({
-                          apiKey,
-                          baseURL,
-                          fetch: createBodyMergingFetch(
-                              {
-                                  chat_template_kwargs: { thinking: true },
-                              },
-                              {
-                                  // 海尔内网 vLLM 网关返回 delta.reasoning(无 _content 后缀);
-                                  // AI SDK 6 的 @ai-sdk/openai chat 模式只识别
-                                  // delta.reasoning_content,故在响应路径上重命名,
-                                  // 让思考内容能被 AI SDK 转成标准 reasoning part
-                                  renameSseDeltaFields: {
-                                      reasoning: "reasoning_content",
-                                  },
-                              },
-                          ),
-                      })
-                    : createOpenAI({ apiKey, baseURL })
-
                 if (enableDeepseekThinking) {
+                    // 关键:用 @ai-sdk/deepseek 而不是 @ai-sdk/openai。
+                    // @ai-sdk/openai 的 chat completions provider 不解析
+                    // delta.reasoning_content(reasoning 永远 void 0),所以即使
+                    // 后端在思考、字段名也正确,AI SDK 仍然不会推 reasoning part
+                    // 给前端 → 没有气泡。
+                    // @ai-sdk/deepseek 原生认 reasoning_content(同时也会在多轮
+                    // 对话里正确回传它),这是 next 项目自己在 Kimi 思考模型上
+                    // 已经验证过的模式(见下方 case "kimi" 实现)。
+                    //
+                    // 同时仍需:
+                    // 1. body 注入 chat_template_kwargs.thinking 才能激活 vLLM
+                    //    chat template 里的思考段
+                    // 2. SSE 字段重命名:海尔内网网关回的是 delta.reasoning
+                    //    (无 _content 后缀),要先重命名才能让 deepseek provider
+                    //    认出来
+                    const customDeepseek = createDeepSeek({
+                        apiKey,
+                        baseURL,
+                        fetch: createBodyMergingFetch(
+                            {
+                                chat_template_kwargs: { thinking: true },
+                            },
+                            {
+                                renameSseDeltaFields: {
+                                    reasoning: "reasoning_content",
+                                },
+                            },
+                        ),
+                    })
                     console.log(
-                        `[DeepSeek Thinking] ENABLED for model: ${modelId} via chat_template_kwargs.thinking`,
+                        `[DeepSeek Thinking] ENABLED for model: ${modelId} via @ai-sdk/deepseek + chat_template_kwargs.thinking`,
                     )
+                    model = customDeepseek(modelId)
+                } else {
+                    const customOpenAI = createOpenAI({ apiKey, baseURL })
+                    model = customOpenAI.chat(modelId)
                 }
-                model = customOpenAI.chat(modelId)
             } else if (overrides?.apiKey) {
                 // Custom API key but official OpenAI endpoint, use Responses API
                 // to support reasoning for gpt-5, o1, o3, o4 models
