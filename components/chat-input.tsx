@@ -210,6 +210,7 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
             saveDiagramToFile,
             showSaveDialog,
             setShowSaveDialog,
+            handleExport,
         } = useDiagram()
 
         const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -491,9 +492,14 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
                                 type="button"
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => setShowHistory(true)}
+                                onClick={() => {
+                                    handleExport()
+                                    setShowHistory(true)
+                                }}
                                 disabled={
-                                    isDisabled || diagramHistory.length === 0
+                                    isDisabled ||
+                                    (!isRealDiagram(chartXML) &&
+                                        diagramHistory.length === 0)
                                 }
                                 tooltipContent={dict.chat.diagramHistory}
                                 className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"

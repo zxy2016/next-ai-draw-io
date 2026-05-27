@@ -234,6 +234,14 @@ export function DiagramProvider({ children }: { children: React.ReactNode }) {
         const MAX_HISTORY_SIZE = 20
         if (expectHistoryExportRef.current) {
             setDiagramHistory((prev) => {
+                // Do not add if the XML is exactly the same as the last item
+                if (
+                    prev.length > 0 &&
+                    prev[prev.length - 1].xml === extractedXML
+                ) {
+                    return prev
+                }
+
                 const newHistory = [
                     ...prev,
                     {
