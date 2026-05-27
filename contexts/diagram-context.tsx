@@ -291,16 +291,46 @@ export function DiagramProvider({ children }: { children: React.ReactNode }) {
             return
         }
 
-        // Extract <root> content to ignore view state changes (pan, zoom)
-        const currentRoot = extractRootContent(chartXML)
-        const newRoot = extractRootContent(data.xml)
+        let incomingXml = data.xml
 
-        // Mark that the diagram was modified only if the actual content changed
-        if (!currentRoot || !newRoot || currentRoot !== newRoot) {
-            isDiagramDirtyRef.current = true
+        // If draw.io returned an SVG data URI or SVG string for autoSave, extract the real XML first
+        if (
+            incomingXml.startsWith("data:image/svg+xml") ||
+            incomingXml.startsWith("<svg")
+        ) {
+            try {
+                if (incomingXml.startsWith("data:image/svg+xml")) {
+                    incomingXml = extractDiagramXML(incomingXml)
+                }
+            } catch (e) {
+                console.error("[AutoSave] Failed to extract XML from SVG", e)
+            }
         }
 
-        setChartXML(data.xml)
+        // Extract <root> content to ignore view state changes (pan, zoom)
+        const currentRoot = extractRootContent(chartXML)
+        const newRoot = extractRootContent(incomingXml)
+
+        if (currentRoot !== null && newRoot !== null) {
+            if (currentRoot !== newRoot) {
+                isDiagramDirtyRef.current = true
+            }
+        } else {
+            // Fallback if <root> couldn't be extracted
+            // Strip view state attributes manually from the raw strings just in case
+            const stripView = (str: string | undefined) =>
+                (str || "")
+                    .replace(/pageScale="[^"]*"/g, "")
+                    .replace(/dx="[^"]*"/g, "")
+                    .replace(/dy="[^"]*"/g, "")
+                    .replace(/\s+/g, "")
+
+            if (stripView(chartXML) !== stripView(incomingXml)) {
+                isDiagramDirtyRef.current = true
+            }
+        }
+
+        setChartXML(data.xml) // Keep whatever format draw.io natively uses for state
     }
 
     const clearDiagram = () => {

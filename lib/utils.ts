@@ -43,7 +43,17 @@ export function extractRootContent(
             decoded = decodeURIComponent(xml)
         } catch (e) {}
     }
-    const match = decoded.match(/<root>([\s\S]*?)<\/root>/)
+
+    // Handle HTML entities if wrapped
+    if (decoded.includes("&lt;")) {
+        decoded = decoded
+            .replace(/&lt;/g, "<")
+            .replace(/&gt;/g, ">")
+            .replace(/&quot;/g, '"')
+    }
+
+    // Look for <root> with optional attributes
+    const match = decoded.match(/<root[^>]*>([\s\S]*?)<\/root>/i)
     // Strip all whitespace so formatting differences don't trigger a false positive
     return match ? match[1].replace(/\s+/g, "") : null
 }
