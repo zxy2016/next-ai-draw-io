@@ -228,9 +228,127 @@ function parseIntSafe(
  *
  * 安全性:只处理 string body + JSON parse 成功的情况;失败时原样透传不抛错。
  */
+/**
+ * 重写 SSE 响应流里 `choices[].delta` 中的字段名。
+ *
+ * 用途:海尔内网 vLLM 网关返回 `delta.reasoning`(无 _content 后缀),
+ * 而 AI SDK 6 的 @ai-sdk/openai chat completions 只识别 `delta.reasoning_content`。
+ * 把流式 chunk 里的字段重命名,让 AI SDK 正确转成标准 reasoning part。
+ *
+ * 实现:逐行解析 SSE,对 `data: {...}` 行 JSON parse → 字段重命名 → 重新序列化。
+ * `data: [DONE]`、`event: ...`、注释行、空行等原样透传。
+ */
+function transformSseDeltaFields(
+    body: ReadableStream<Uint8Array>,
+    rename: Record<string, string>,
+    debug = false,
+): ReadableStream<Uint8Array> {
+    const decoder = new TextDecoder()
+    const encoder = new TextEncoder()
+    let renamedCount = 0
+
+    return new ReadableStream<Uint8Array>({
+        async start(controller) {
+            const reader = body.getReader()
+            let buf = ""
+            try {
+                while (true) {
+                    const { done, value } = await reader.read()
+                    if (done) {
+                        if (buf.length > 0) {
+                            controller.enqueue(encoder.encode(buf))
+                        }
+                        if (debug && renamedCount > 0) {
+                            console.log(
+                                `[SseFieldRewrite] renamed ${renamedCount} delta chunks (${Object.entries(
+                                    rename,
+                                )
+                                    .map(([k, v]) => `${k}→${v}`)
+                                    .join(", ")})`,
+                            )
+                        }
+                        controller.close()
+                        return
+                    }
+                    buf += decoder.decode(value, { stream: true })
+                    // SSE 按 \n 分行;不强制 \n\n 边界(部分网关用单 \n)
+                    const lines = buf.split("\n")
+                    buf = lines.pop() ?? ""
+                    for (const line of lines) {
+                        const rewritten = maybeRewriteSseLine(
+                            line,
+                            rename,
+                            () => {
+                                renamedCount++
+                            },
+                        )
+                        controller.enqueue(encoder.encode(`${rewritten}\n`))
+                    }
+                }
+            } catch (err) {
+                controller.error(err)
+            } finally {
+                reader.releaseLock()
+            }
+        },
+    })
+}
+
+/**
+ * 处理单行 SSE。只对 `data: {JSON}` 行做字段改写,其他原样返回。
+ */
+function maybeRewriteSseLine(
+    line: string,
+    rename: Record<string, string>,
+    onRename: () => void,
+): string {
+    if (!line.startsWith("data: ")) return line
+    const payload = line.slice(6).trim()
+    if (!payload || payload === "[DONE]") return line
+    try {
+        const parsed = JSON.parse(payload)
+        const choices = parsed?.choices
+        if (!Array.isArray(choices)) return line
+        let didRename = false
+        for (const choice of choices) {
+            const delta = choice?.delta
+            if (!delta || typeof delta !== "object") continue
+            for (const [from, to] of Object.entries(rename)) {
+                if (
+                    typeof delta[from] === "string" &&
+                    delta[from].length > 0 &&
+                    typeof delta[to] !== "string"
+                ) {
+                    delta[to] = delta[from]
+                    delete delta[from]
+                    didRename = true
+                }
+            }
+        }
+        if (didRename) {
+            onRename()
+            return `data: ${JSON.stringify(parsed)}`
+        }
+        return line
+    } catch {
+        // 不是合法 JSON(可能 keep-alive 注释、心跳等)
+        return line
+    }
+}
+
 function createBodyMergingFetch(
     overrides: Record<string, unknown>,
+    options?: {
+        /**
+         * 重命名响应 SSE 流中 choices[].delta 内的字段。
+         * 用于补齐字段命名差异(如海尔 vLLM 的 reasoning → reasoning_content)。
+         */
+        renameSseDeltaFields?: Record<string, string>
+    },
 ): typeof fetch {
+    const debug = process.env.DEBUG_DEEPSEEK_THINKING === "true"
+    const renameFields = options?.renameSseDeltaFields
+
     return async function mergedFetch(input, init) {
         if (init?.body && typeof init.body === "string") {
             try {
@@ -253,12 +371,49 @@ function createBodyMergingFetch(
                         parsed[key] = value
                     }
                 }
+                if (debug) {
+                    console.log(
+                        `[BodyMergingFetch] URL: ${typeof input === "string" ? input : (input as URL | Request).toString()}`,
+                    )
+                    console.log(
+                        `[BodyMergingFetch] Body keys after merge:`,
+                        Object.keys(parsed),
+                    )
+                    console.log(
+                        `[BodyMergingFetch] chat_template_kwargs:`,
+                        JSON.stringify(parsed.chat_template_kwargs),
+                    )
+                }
                 init = { ...init, body: JSON.stringify(parsed) }
-            } catch {
+            } catch (err) {
                 // body 不是合法 JSON(如 multipart 上传),原样透传
+                if (debug) {
+                    console.log(
+                        `[BodyMergingFetch] JSON parse failed, passing through:`,
+                        err instanceof Error ? err.message : err,
+                    )
+                }
             }
         }
-        return globalThis.fetch(input, init)
+
+        const response = await globalThis.fetch(input, init)
+
+        // 响应字段重命名:用于把 vLLM 的 delta.reasoning 映射成
+        // AI SDK 期望的 delta.reasoning_content
+        if (renameFields && response.ok && response.body) {
+            const rewritten = transformSseDeltaFields(
+                response.body,
+                renameFields,
+                debug,
+            )
+            return new Response(rewritten, {
+                status: response.status,
+                statusText: response.statusText,
+                headers: response.headers,
+            })
+        }
+
+        return response
     }
 }
 
@@ -886,9 +1041,20 @@ export function getAIModel(overrides?: ClientOverrides): ModelConfig {
                     ? createOpenAI({
                           apiKey,
                           baseURL,
-                          fetch: createBodyMergingFetch({
-                              chat_template_kwargs: { thinking: true },
-                          }),
+                          fetch: createBodyMergingFetch(
+                              {
+                                  chat_template_kwargs: { thinking: true },
+                              },
+                              {
+                                  // 海尔内网 vLLM 网关返回 delta.reasoning(无 _content 后缀);
+                                  // AI SDK 6 的 @ai-sdk/openai chat 模式只识别
+                                  // delta.reasoning_content,故在响应路径上重命名,
+                                  // 让思考内容能被 AI SDK 转成标准 reasoning part
+                                  renameSseDeltaFields: {
+                                      reasoning: "reasoning_content",
+                                  },
+                              },
+                          ),
                       })
                     : createOpenAI({ apiKey, baseURL })
 
