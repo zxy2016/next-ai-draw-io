@@ -24,6 +24,7 @@ import { Toaster, toast } from "sonner"
 import { ButtonWithTooltip } from "@/components/button-with-tooltip"
 import { ChatInput } from "@/components/chat-input"
 import Image from "@/components/image-with-basepath"
+import { IrEditorOnboarding } from "@/components/ir-editor-onboarding"
 import { ModelConfigDialog } from "@/components/model-config-dialog"
 import { SettingsDialog } from "@/components/settings-dialog"
 import { IREditorDrawer } from "@/components/swimlane/IREditorDrawer"
@@ -1500,22 +1501,24 @@ ${JSON.stringify(parsed.data, null, 2)}
 
                         {/* IR 编辑按钮: 仅 swimlane 模式 + 已有 IR 时显示 */}
                         {flowMode === "swimlane" && currentIr && (
-                            <ButtonWithTooltip
-                                tooltipContent="编辑当前 IR"
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setShowIrEditor(true)}
-                                disabled={
-                                    status === "streaming" ||
-                                    status === "submitted"
-                                }
-                                className="hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
-                                data-testid="ir-editor-button"
-                            >
-                                <FileEdit
-                                    className={`${isMobile ? "h-4 w-4" : "h-5 w-5"} text-muted-foreground`}
-                                />
-                            </ButtonWithTooltip>
+                            <IrEditorOnboarding>
+                                <ButtonWithTooltip
+                                    tooltipContent={dict.nav.irEditorTooltip}
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setShowIrEditor(true)}
+                                    disabled={
+                                        status === "streaming" ||
+                                        status === "submitted"
+                                    }
+                                    className="hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
+                                    data-testid="ir-editor-button"
+                                >
+                                    <FileEdit
+                                        className={`${isMobile ? "h-4 w-4" : "h-5 w-5"} text-muted-foreground`}
+                                    />
+                                </ButtonWithTooltip>
+                            </IrEditorOnboarding>
                         )}
 
                         <ButtonWithTooltip

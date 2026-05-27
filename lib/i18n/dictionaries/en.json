@@ -18,7 +18,12 @@
         "settings": "Settings",
         "hidePanel": "Hide chat panel (Ctrl+B)",
         "showPanel": "Show chat panel (Ctrl+B)",
-        "aiChat": "AI Chat"
+        "aiChat": "AI Chat",
+        "irEditorTooltip": "Edit Current IR",
+        "irEditorOnboardingTitle": "✨ Smart Structure Editor",
+        "irEditorOnboardingDesc": "Click here to directly modify and fine-tune diagram nodes and connections in the editor.",
+        "irEditorGotIt": "Got It",
+        "irEditorDismiss": "Don't show again"
     },
     "providers": {
         "useServerDefault": "Use Server Default",

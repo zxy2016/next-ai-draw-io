@@ -18,7 +18,12 @@
         "settings": "設定",
         "hidePanel": "隱藏聊天面板 (Ctrl+B)",
         "showPanel": "顯示聊天面板 (Ctrl+B)",
-        "aiChat": "AI 聊天"
+        "aiChat": "AI 聊天",
+        "irEditorTooltip": "編輯目前 IR",
+        "irEditorOnboardingTitle": "✨ 智能結構編輯",
+        "irEditorOnboardingDesc": "點擊此處可直接在編輯器中對圖表的結構和節點連接進行精細化調整。",
+        "irEditorGotIt": "我知道了",
+        "irEditorDismiss": "不再提醒"
     },
     "providers": {
         "useServerDefault": "使用伺服器預設值",

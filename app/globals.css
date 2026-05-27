@@ -408,7 +408,26 @@
 @media (prefers-reduced-motion: reduce) {
     .animate-dialog-in,
     .animate-dialog-out,
-    .animate-check-pop {
+    .animate-check-pop,
+    .ir-pulse-animation {
         animation: none;
     }
+}
+
+/* IR 编辑按钮新手引导脉冲动画 */
+@keyframes ir-pulse-glow {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 12px 4px rgba(59, 130, 246, 0.3);
+        transform: scale(1.05);
+    }
+}
+
+.ir-pulse-animation {
+    animation: ir-pulse-glow 1.2s ease-in-out 3;
+    border-radius: 0.375rem;
 }

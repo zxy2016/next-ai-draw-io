@@ -18,7 +18,12 @@
         "settings": "設定",
         "hidePanel": "チャットパネルを非表示 (Ctrl+B)",
         "showPanel": "チャットパネルを表示 (Ctrl+B)",
-        "aiChat": "AI チャット"
+        "aiChat": "AI チャット",
+        "irEditorTooltip": "現在のIRを編集",
+        "irEditorOnboardingTitle": "✨ 構造エディタ",
+        "irEditorOnboardingDesc": "クリックして、ダイアグラムの構造や接続ノードをエディタで直接微調整します。",
+        "irEditorGotIt": "了解しました",
+        "irEditorDismiss": "今後表示しない"
     },
     "providers": {
         "useServerDefault": "サーバーデフォルトを使用",
