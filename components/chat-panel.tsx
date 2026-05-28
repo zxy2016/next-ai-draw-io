@@ -1509,11 +1509,7 @@ ${JSON.stringify(parsed.data, null, 2)}
                     >
                         <div className="flex items-center gap-2">
                             <Image
-                                src={
-                                    darkMode
-                                        ? "/favicon-white.svg"
-                                        : "/favicon.ico"
-                                }
+                                src="/favicon.ico"
                                 alt="HDraw"
                                 width={isMobile ? 24 : 28}
                                 height={isMobile ? 24 : 28}
