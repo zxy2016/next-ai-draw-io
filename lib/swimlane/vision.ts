@@ -1,4 +1,4 @@
-import { generateText } from "ai"
+import { generateText, streamText } from "ai"
 import { getAIModel, supportsImageInput } from "@/lib/ai-providers"
 
 export interface VisionImage {
@@ -23,6 +23,89 @@ export const VISION_SYSTEM_PROMPT = `你是流程图视觉分析助手。用户�
 - 字迹辨认不清的地方写(辨认不清)
 - 不要输出 JSON,不要输出 Markdown 标题或列表符号
 - 严格按上述六段模板输出,每段占一行或多行`
+
+/**
+ * 流式分析手绘流程图图片
+ */
+export function streamAnalyzeFlowchartImages(
+    images: VisionImage[],
+    mainModelConfig: any,
+    userText?: string,
+) {
+    if (images.length === 0) {
+        throw new Error("streamAnalyzeFlowchartImages: images 不能为空")
+    }
+
+    let modelConfig: any = null
+    const visionModelId = process.env.VISION_MODEL
+
+    // 1. 优先使用指定的 VISION_MODEL
+    if (visionModelId) {
+        console.log(
+            `[Vision] Found VISION_MODEL: ${visionModelId}. Instantiating...`,
+        )
+        try {
+            const provider =
+                process.env.VISION_PROVIDER || mainModelConfig.provider
+            modelConfig = getAIModel({
+                modelId: visionModelId,
+                provider: provider,
+            })
+        } catch (e) {
+            console.error(
+                `[Vision] Failed to initialize designated VISION_MODEL:`,
+                e,
+            )
+        }
+    }
+
+    // 2. 如果没有配置 VISION_MODEL，Fallback 复用主多模态大模型
+    if (!modelConfig) {
+        if (supportsImageInput(mainModelConfig.modelId)) {
+            console.log(
+                `[Vision] Fallback: Reusing main vision-capable model: ${mainModelConfig.modelId}`,
+            )
+            modelConfig = mainModelConfig
+        }
+    }
+
+    // 3. 如果都不可用，报错提示用户配置
+    if (!modelConfig) {
+        throw new Error(
+            "当前选用的主模型不支持图片输入，且未配置有效的 VISION_MODEL。请在设置中切换为多模态模型（如 GPT-4o, Claude 3.5）或在环境变量中配置 VISION_MODEL。",
+        )
+    }
+
+    // 构造 Vercel AI SDK 的多模态内容格式
+    const imageParts = images.map((img) => ({
+        type: "image" as const,
+        image: img.base64,
+        mimeType: img.mediaType,
+    }))
+
+    const textPart = {
+        type: "text" as const,
+        text: `用户描述: ${userText?.trim() || "(未提供文字说明)"}`,
+    }
+
+    const messages = [
+        {
+            role: "user" as const,
+            content: [...imageParts, textPart],
+        },
+    ]
+
+    console.log(
+        `[Vision] Starting stream flowchart visual analysis with model: ${modelConfig.modelId}`,
+    )
+
+    return streamText({
+        model: modelConfig.model,
+        system: VISION_SYSTEM_PROMPT,
+        messages,
+        headers: modelConfig.headers,
+    })
+}
 
 /**
  * 分析手绘流程图图片：

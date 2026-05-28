@@ -1071,6 +1071,18 @@ export function getAIModel(overrides?: ClientOverrides): ModelConfig {
                         `[DeepSeek Thinking] ENABLED for model: ${modelId} via @ai-sdk/deepseek + chat_template_kwargs.thinking`,
                     )
                     model = customDeepseek(modelId)
+                } else if (modelId.toLowerCase().includes("qwen")) {
+                    const customQwen = createOpenAI({
+                        apiKey,
+                        baseURL,
+                        fetch: createBodyMergingFetch({
+                            chat_template_kwargs: { enable_thinking: false },
+                        }),
+                    })
+                    console.log(
+                        `[Qwen Vision Optimization] Injecting chat_template_kwargs.enable_thinking = false for model: ${modelId}`,
+                    )
+                    model = customQwen.chat(modelId)
                 } else {
                     const customOpenAI = createOpenAI({ apiKey, baseURL })
                     model = customOpenAI.chat(modelId)

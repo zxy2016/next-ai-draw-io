@@ -33,7 +33,10 @@ import {
     wrapWithObserve,
 } from "@/lib/langfuse"
 import { findServerModelById } from "@/lib/server-model-config"
-import { analyzeFlowchartImages } from "@/lib/swimlane/vision"
+import {
+    analyzeFlowchartImages,
+    streamAnalyzeFlowchartImages,
+} from "@/lib/swimlane/vision"
 import { getSystemPromptForMode } from "@/lib/system-prompts"
 import { getToolsForMode, parseFlowMode } from "@/lib/tools"
 import { getUserIdFromRequest } from "@/lib/user-id"
@@ -279,8 +282,10 @@ async function handleChatRequest(req: Request): Promise<Response> {
         []
 
     // 双阶段图片处理逻辑
-    let parsedImageDescription = ""
-    if (fileParts.length > 0) {
+    const hasImages = fileParts.length > 0
+    let imagesToAnalyze: any[] = []
+
+    if (hasImages) {
         const hasVisionModel = !!process.env.VISION_MODEL
         if (!hasVisionModel && !supportsImageInput(modelId)) {
             return Response.json(
@@ -291,131 +296,47 @@ async function handleChatRequest(req: Request): Promise<Response> {
             )
         }
 
-        console.log(
-            `[route.ts] Detected ${fileParts.length} image file(s). Triggering visual pre-processing...`,
-        )
-        try {
-            // 将 fileParts 转换为 analyzeFlowchartImages 接受的格式
-            const imagesToAnalyze = fileParts.map((part: any) => {
-                const base64Data = part.url.split(",")[1] || ""
-                const mimeType = part.mediaType || "image/jpeg"
-                return {
-                    mediaType: mimeType,
-                    base64: base64Data,
-                }
-            })
-
-            const mainModelConfig = {
-                model,
-                providerOptions,
-                headers,
-                modelId,
-                provider: resolvedProvider,
+        // 将 fileParts 转换为 analyzeFlowchartImages 接受的格式
+        imagesToAnalyze = fileParts.map((part: any) => {
+            const base64Data = part.url.split(",")[1] || ""
+            const mimeType = part.mediaType || "image/jpeg"
+            return {
+                mediaType: mimeType,
+                base64: base64Data,
             }
-            const visionResult = await analyzeFlowchartImages(
-                imagesToAnalyze,
-                mainModelConfig,
-                userInputText,
-            )
-            parsedImageDescription = visionResult.description
-            console.log(
-                `[route.ts] Image analysis completed. Description length: ${parsedImageDescription.length}`,
-            )
-        } catch (visionErr) {
-            console.error(`[route.ts] Visual analysis failed:`, visionErr)
-            return Response.json(
-                {
-                    error: `手绘流程图图片分析失败: ${visionErr instanceof Error ? visionErr.message : String(visionErr)}`,
-                },
-                { status: 500 },
-            )
-        }
+        })
     }
 
-    const finalUserInputText = parsedImageDescription
-        ? `${userInputText}\n\n[手绘流程图识别结果]\n${parsedImageDescription}`
-        : userInputText
-
-    // User input only - XML is now in a separate cached system message
-    const formattedUserInput = `User input:
-"""md
-${finalUserInputText}
-"""`
-
-    // === SUGGEST_REPLIES STRIPPING START ===
-    // 在 convertToModelMessages 之前，从原始 UI 消息中剥离 suggest_replies 的
-    // tool-invocation parts。必须在此处处理，因为 convertToModelMessages 会把
-    // toolName 变形（如 "invocation"），导致转换后按名称过滤完全无效。
-    // 剥离的目的：让 LLM 在多轮对话中看不到历史 suggest_replies 调用，
-    // 避免模型因为"已经调用过"而在后续轮次偷懒不再调用。
+    // SUGGEST_REPLIES STRIPPING 保持不变，供后续使用
     const messagesWithoutSuggestReplies = messages.map((msg: any) => {
         if (!msg.parts || !Array.isArray(msg.parts)) return msg
         const filteredParts = msg.parts.filter((part: any) => {
-            // 过滤 tool-invocation 类型中 toolName 为 suggest_replies 的 parts
             if (part.type === "tool-invocation") {
                 const toolName = part.toolInvocation?.toolName || part.toolName
                 if (toolName === "suggest_replies") return false
             }
             return true
         })
-        // 如果过滤后 parts 为空，保留消息但只留文本部分（避免空消息）
         return { ...msg, parts: filteredParts }
     })
-    // === SUGGEST_REPLIES STRIPPING END ===
 
-    // Convert UIMessages to ModelMessages and add system message
     const modelMessages = await convertToModelMessages(
         messagesWithoutSuggestReplies,
     )
 
-    // DEBUG: Log incoming messages structure
     console.log("[route.ts] Incoming messages count:", messages.length)
-    messages.forEach((msg: any, idx: number) => {
-        console.log(
-            `[route.ts] Message ${idx} role:`,
-            msg.role,
-            "parts count:",
-            msg.parts?.length,
-        )
-        if (msg.parts) {
-            msg.parts.forEach((part: any, partIdx: number) => {
-                if (
-                    part.type === "tool-invocation" ||
-                    part.type === "tool-result"
-                ) {
-                    console.log(`[route.ts]   Part ${partIdx}:`, {
-                        type: part.type,
-                        toolName: part.toolName,
-                        hasInput: !!part.input,
-                        inputType: typeof part.input,
-                        inputKeys:
-                            part.input && typeof part.input === "object"
-                                ? Object.keys(part.input)
-                                : null,
-                    })
-                }
-            })
-        }
-    })
 
-    // Replace historical tool call XML with placeholders to reduce tokens
-    // Disabled by default - some models (e.g. minimax) copy placeholders instead of generating XML
-    // Swimlane mode 不走 display_diagram,历史里都是 IR 对象,replace 没意义还会破坏 IR 结构
     const enableHistoryReplace =
         flowMode === "free" && process.env.ENABLE_HISTORY_XML_REPLACE === "true"
     const placeholderMessages = enableHistoryReplace
         ? replaceHistoricalToolInputs(modelMessages)
         : modelMessages
 
-    // Filter out messages with empty content arrays (Bedrock API rejects these)
-    // This is a safety measure - ideally convertToModelMessages should handle all cases
     let enhancedMessages = placeholderMessages.filter(
         (msg: any) =>
             msg.content && Array.isArray(msg.content) && msg.content.length > 0,
     )
 
-    // Filter out tool-calls with invalid inputs (from failed repair or interrupted streaming)
-    // Bedrock API rejects messages where toolUse.input is not a valid JSON object
     enhancedMessages = enhancedMessages
         .map((msg: any) => {
             if (!msg.content || !Array.isArray(msg.content)) {
@@ -423,7 +344,6 @@ ${finalUserInputText}
             }
             const filteredContent = msg.content.filter((part: any) => {
                 if (part.type === "tool-call") {
-                    // Check if input is a valid object (not null, undefined, or empty)
                     if (
                         !part.input ||
                         typeof part.input !== "object" ||
@@ -442,56 +362,7 @@ ${finalUserInputText}
         })
         .filter((msg: any) => msg.content && msg.content.length > 0)
 
-    // DEBUG: Log modelMessages structure (what's being sent to AI)
-    console.log("[route.ts] Model messages count:", enhancedMessages.length)
-    enhancedMessages.forEach((msg: any, idx: number) => {
-        console.log(
-            `[route.ts] ModelMsg ${idx} role:`,
-            msg.role,
-            "content count:",
-            msg.content?.length,
-        )
-        if (msg.content) {
-            msg.content.forEach((part: any, partIdx: number) => {
-                if (part.type === "tool-call" || part.type === "tool-result") {
-                    console.log(`[route.ts]   Content ${partIdx}:`, {
-                        type: part.type,
-                        toolName: part.toolName,
-                        hasInput: !!part.input,
-                        inputType: typeof part.input,
-                        inputValue:
-                            part.input === undefined
-                                ? "undefined"
-                                : part.input === null
-                                  ? "null"
-                                  : "object",
-                    })
-                }
-            })
-        }
-    })
-
-    // Update the last message with user input only (XML moved to separate cached system message)
-    if (enhancedMessages.length >= 1) {
-        const lastModelMessage = enhancedMessages[enhancedMessages.length - 1]
-        if (lastModelMessage.role === "user") {
-            // Build content array with user input text and file parts
-            const contentParts: any[] = [
-                { type: "text", text: formattedUserInput },
-            ]
-
-            enhancedMessages = [
-                ...enhancedMessages.slice(0, -1),
-                { ...lastModelMessage, content: contentParts },
-            ]
-        }
-    }
-
-    // Add cache point to the last assistant message in conversation history
-    // This caches the entire conversation prefix for subsequent requests
-    // Strategy: system (cached) + history with last assistant (cached) + new user message
     if (shouldCache && enhancedMessages.length >= 2) {
-        // Find the last assistant message (should be second-to-last, before current user message)
         for (let i = enhancedMessages.length - 2; i >= 0; i--) {
             if (enhancedMessages[i].role === "assistant") {
                 enhancedMessages[i] = {
@@ -500,18 +371,11 @@ ${finalUserInputText}
                         bedrock: { cachePoint: { type: "default" } },
                     },
                 }
-                break // Only cache the last assistant message
+                break
             }
         }
     }
 
-    // System messages with multiple cache breakpoints for optimal caching:
-    // - Breakpoint 1: System instructions + custom instructions - changes when user updates custom system message
-    // - Breakpoint 2: Current XML context - changes per diagram, but constant within a conversation turn
-    // Some providers (e.g. MiniMax) don't support multiple system messages
-    // Merge them into a single system message for compatibility
-    // Also merge for OpenAI-compatible providers with custom base URLs (e.g. vLLM, LMStudio)
-    // because open-source model chat templates (Qwen, Llama, etc.) typically reject multiple system messages
     const isCustomOpenAIEndpoint =
         resolvedProvider === "openai" &&
         !!(
@@ -523,8 +387,6 @@ ${finalUserInputText}
     const isSingleSystemProvider =
         SINGLE_SYSTEM_PROVIDERS.has(resolvedProvider) || isCustomOpenAIEndpoint
 
-    // Swimlane mode 输出 IR JSON 不是 mxCell XML,注入 xmlContext 会让模型困惑
-    // (画布上的 XML 不是 IR 工具的输入,也不能被 propose_swimlane_ir 增量编辑)
     const xmlContext =
         flowMode === "swimlane"
             ? ""
@@ -544,7 +406,6 @@ ${xml || ""}
 
 IMPORTANT: The "Current diagram XML" is the SINGLE SOURCE OF TRUTH for what's on the canvas right now. The user can manually add, delete, or modify shapes directly in draw.io. Always count and describe elements based on the CURRENT XML, not on what you previously generated. If both previous and current XML are shown, compare them to understand what the user changed. When using edit_diagram, COPY search patterns exactly from the CURRENT XML - attribute order matters!`
 
-    // Swimlane mode 不需要 xml-context system message,只发主 prompt
     const systemMessages =
         flowMode === "swimlane"
             ? [
@@ -566,7 +427,6 @@ IMPORTANT: The "Current diagram XML" is the SINGLE SOURCE OF TRUTH for what's on
                     },
                 ]
               : [
-                    // Cache breakpoint 1: Instructions (+ optional custom instructions)
                     {
                         role: "system" as const,
                         content: finalSystemMessage,
@@ -576,7 +436,6 @@ IMPORTANT: The "Current diagram XML" is the SINGLE SOURCE OF TRUTH for what's on
                             },
                         }),
                     },
-                    // Cache breakpoint 2: Previous and Current diagram XML context
                     {
                         role: "system" as const,
                         content: xmlContext,
@@ -588,133 +447,198 @@ IMPORTANT: The "Current diagram XML" is the SINGLE SOURCE OF TRUTH for what's on
                     },
                 ]
 
-    const allMessages = [...systemMessages, ...enhancedMessages]
+    // 封装启动主大模型 streamText 的内部函数
+    const runMainModelStream = (userPrompt: string) => {
+        const formattedUserInput = `User input:
+"""md
+${userPrompt}
+"""`
 
-    const result = streamText({
-        model,
-        abortSignal: req.signal,
-        ...(process.env.MAX_OUTPUT_TOKENS && {
-            maxOutputTokens: parseInt(process.env.MAX_OUTPUT_TOKENS, 10),
-        }),
-        stopWhen: stepCountIs(5),
-        // Repair truncated tool calls when maxOutputTokens is reached mid-JSON
-        experimental_repairToolCall: async ({ toolCall, error }) => {
-            // DEBUG: Log what we're trying to repair
-            console.log(`[repairToolCall] Tool: ${toolCall.toolName}`)
-            console.log(
-                `[repairToolCall] Error: ${error.name} - ${error.message}`,
-            )
-            console.log(`[repairToolCall] Input type: ${typeof toolCall.input}`)
-            console.log(`[repairToolCall] Input value:`, toolCall.input)
-
-            // Only attempt repair for invalid tool input (broken JSON from truncation)
-            if (
-                error instanceof InvalidToolInputError ||
-                error.name === "AI_InvalidToolInputError"
-            ) {
-                try {
-                    // Pre-process to fix common LLM JSON errors that jsonrepair can't handle
-                    let inputToRepair = toolCall.input
-                    if (typeof inputToRepair === "string") {
-                        // Fix `:=` instead of `: ` (LLM sometimes generates this)
-                        inputToRepair = inputToRepair.replace(/:=/g, ": ")
-                        // Fix `= "` instead of `: "`
-                        inputToRepair = inputToRepair.replace(/=\s*"/g, ': "')
-                        // Fix inconsistent quote escaping in XML attributes within JSON strings
-                        // Pattern: attribute="value\" where opening quote is unescaped but closing is escaped
-                        // Example: y="-20\" should be y=\"-20\"
-                        inputToRepair = inputToRepair.replace(
-                            /(\w+)="([^"]*?)\\"/g,
-                            '$1=\\"$2\\"',
-                        )
-                    }
-                    // Use jsonrepair to fix truncated JSON
-                    const repairedInput = jsonrepair(inputToRepair)
-                    console.log(
-                        `[repairToolCall] Repaired truncated JSON for tool: ${toolCall.toolName}`,
-                    )
-                    return { ...toolCall, input: repairedInput }
-                } catch (repairError) {
-                    console.warn(
-                        `[repairToolCall] Failed to repair JSON for tool: ${toolCall.toolName}`,
-                        repairError,
-                    )
-                    // Return a placeholder input to avoid API errors in multi-step
-                    // The tool will fail gracefully on client side
-                    if (toolCall.toolName === "edit_diagram") {
-                        return {
-                            ...toolCall,
-                            input: {
-                                operations: [],
-                                _error: "JSON repair failed - no operations to apply",
-                            },
-                        }
-                    }
-                    if (toolCall.toolName === "display_diagram") {
-                        return {
-                            ...toolCall,
-                            input: {
-                                xml: "",
-                                _error: "JSON repair failed - empty diagram",
-                            },
-                        }
-                    }
-                    return null
-                }
+        let enhancedMessagesCopy = [...enhancedMessages]
+        if (enhancedMessagesCopy.length >= 1) {
+            const lastModelMessage =
+                enhancedMessagesCopy[enhancedMessagesCopy.length - 1]
+            if (lastModelMessage.role === "user") {
+                const contentParts = [
+                    { type: "text", text: formattedUserInput },
+                ]
+                enhancedMessagesCopy = [
+                    ...enhancedMessagesCopy.slice(0, -1),
+                    { ...lastModelMessage, content: contentParts },
+                ]
             }
-            // Don't attempt to repair other errors (like NoSuchToolError)
-            return null
-        },
-        messages: allMessages,
-        ...(providerOptions && { providerOptions }), // This now includes all reasoning configs
-        ...(headers && { headers }),
-        // Langfuse telemetry config (returns undefined if not configured)
-        ...(getTelemetryConfig({ sessionId: validSessionId, userId }) && {
-            experimental_telemetry: getTelemetryConfig({
-                sessionId: validSessionId,
-                userId,
+        }
+
+        const allMessagesCopy = [...systemMessages, ...enhancedMessagesCopy]
+
+        const result = streamText({
+            model,
+            abortSignal: req.signal,
+            ...(process.env.MAX_OUTPUT_TOKENS && {
+                maxOutputTokens: parseInt(process.env.MAX_OUTPUT_TOKENS, 10),
             }),
-        }),
-        onFinish: ({ text, totalUsage }) => {
-            // AI SDK 6 telemetry auto-reports token usage on its spans
-            setTraceOutput(text)
+            stopWhen: stepCountIs(5),
+            experimental_repairToolCall: async ({ toolCall, error }) => {
+                console.log(`[repairToolCall] Tool: ${toolCall.toolName}`)
+                console.log(
+                    `[repairToolCall] Error: ${error.name} - ${error.message}`,
+                )
+                if (
+                    error instanceof InvalidToolInputError ||
+                    error.name === "AI_InvalidToolInputError"
+                ) {
+                    try {
+                        let inputToRepair = toolCall.input
+                        if (typeof inputToRepair === "string") {
+                            inputToRepair = inputToRepair.replace(/:=/g, ": ")
+                            inputToRepair = inputToRepair.replace(
+                                /=\s*"/g,
+                                ': "',
+                            )
+                            inputToRepair = inputToRepair.replace(
+                                /(\w+)="([^"]*?)\\"/g,
+                                '$1=\\"$2\\"',
+                            )
+                        }
+                        const repairedInput = jsonrepair(inputToRepair)
+                        console.log(
+                            `[repairToolCall] Repaired truncated JSON for tool: ${toolCall.toolName}`,
+                        )
+                        return { ...toolCall, input: repairedInput }
+                    } catch (repairError) {
+                        console.warn(
+                            `[repairToolCall] Failed to repair JSON for tool: ${toolCall.toolName}`,
+                            repairError,
+                        )
+                        if (toolCall.toolName === "edit_diagram") {
+                            return {
+                                ...toolCall,
+                                input: {
+                                    operations: [],
+                                    _error: "JSON repair failed - no operations to apply",
+                                },
+                            }
+                        }
+                        if (toolCall.toolName === "display_diagram") {
+                            return {
+                                ...toolCall,
+                                input: {
+                                    xml: "",
+                                    _error: "JSON repair failed - empty diagram",
+                                },
+                            }
+                        }
+                        return null
+                    }
+                }
+                return null
+            },
+            messages: allMessagesCopy,
+            ...(providerOptions && { providerOptions }),
+            ...(headers && { headers }),
+            ...(getTelemetryConfig({ sessionId: validSessionId, userId }) && {
+                experimental_telemetry: getTelemetryConfig({
+                    sessionId: validSessionId,
+                    userId,
+                }),
+            }),
+            onFinish: ({ text, totalUsage }) => {
+                setTraceOutput(text)
+                if (
+                    isQuotaEnabled() &&
+                    !hasOwnApiKey &&
+                    userId !== "anonymous" &&
+                    totalUsage
+                ) {
+                    const totalTokens =
+                        (totalUsage.inputTokens || 0) +
+                        (totalUsage.outputTokens || 0) +
+                        (totalUsage.cachedInputTokens || 0) +
+                        (totalUsage.inputTokenDetails?.cacheWriteTokens || 0)
+                    recordTokenUsage(userId, totalTokens)
+                }
+            },
+            tools: getToolsForMode(flowMode),
+            ...(process.env.TEMPERATURE !== undefined && {
+                temperature: parseFloat(process.env.TEMPERATURE),
+            }),
+        })
 
-            // Record token usage for server-side quota tracking (if enabled)
-            // Use totalUsage (cumulative across all steps) instead of usage (final step only)
-            // Include all 4 token types: input, output, cache read, cache write
-            if (
-                isQuotaEnabled() &&
-                !hasOwnApiKey &&
-                userId !== "anonymous" &&
-                totalUsage
-            ) {
-                const totalTokens =
-                    (totalUsage.inputTokens || 0) +
-                    (totalUsage.outputTokens || 0) +
-                    (totalUsage.cachedInputTokens || 0) +
-                    (totalUsage.inputTokenDetails?.cacheWriteTokens || 0)
-                recordTokenUsage(userId, totalTokens)
-            }
-        },
-        tools: getToolsForMode(flowMode),
-        ...(process.env.TEMPERATURE !== undefined && {
-            temperature: parseFloat(process.env.TEMPERATURE),
-        }),
+        return result.toUIMessageStreamResponse({
+            sendReasoning: true,
+            messageMetadata: ({ part }) => {
+                if (part.type === "finish") {
+                    const usage = (part as any).totalUsage
+                    return {
+                        totalTokens: usage?.totalTokens ?? 0,
+                        finishReason: (part as any).finishReason,
+                    }
+                }
+                return undefined
+            },
+        })
+    }
+
+    // 分支 1: 无图片，直接运行主模型
+    if (!hasImages) {
+        return runMainModelStream(userInputText)
+    }
+
+    // 分支 2: 有图片，运行流式拼接双流模式
+    console.log(
+        `[route.ts] Preprocessing: Triggering stream visual analysis with ${imagesToAnalyze.length} image(s)...`,
+    )
+
+    const mainModelConfig = {
+        model,
+        providerOptions,
+        headers,
+        modelId,
+        provider: resolvedProvider,
+    }
+
+    const visionResultStream = streamAnalyzeFlowchartImages(
+        imagesToAnalyze,
+        mainModelConfig,
+        userInputText,
+    )
+
+    const visionResponse = visionResultStream.toUIMessageStreamResponse()
+    const visionBody = visionResponse.body
+    if (!visionBody) {
+        throw new Error("无法获取视觉大模型的响应流")
+    }
+
+    const accumulatedTextPromise = visionResultStream.text
+
+    const combinedStream = concatStreams(visionBody, async () => {
+        let parsedText = ""
+        try {
+            parsedText = await accumulatedTextPromise
+            console.log(
+                `[route.ts] Stream Image analysis completed. Content length: ${parsedText.length}`,
+            )
+        } catch (err) {
+            console.error(
+                "[route.ts] Stream Image analysis failed, running main model without visual details:",
+                err,
+            )
+        }
+
+        const finalUserInputText = parsedText
+            ? `${userInputText}\n\n[手绘流程图识别结果]\n${parsedText}`
+            : userInputText
+
+        const mainResponse = runMainModelStream(finalUserInputText)
+        const mainBody = mainResponse.body
+        if (!mainBody) {
+            throw new Error("无法获取主模型的响应流")
+        }
+        return mainBody
     })
 
-    return result.toUIMessageStreamResponse({
-        sendReasoning: true,
-        messageMetadata: ({ part }) => {
-            if (part.type === "finish") {
-                const usage = (part as any).totalUsage
-                // AI SDK 6 provides totalTokens directly
-                return {
-                    totalTokens: usage?.totalTokens ?? 0,
-                    finishReason: (part as any).finishReason,
-                }
-            }
-            return undefined
-        },
+    return new Response(combinedStream, {
+        headers: visionResponse.headers,
     })
 }
 
@@ -794,4 +718,83 @@ const observedHandler = wrapWithObserve(safeHandler)
 
 export async function POST(req: Request) {
     return observedHandler(req)
+}
+
+function concatStreams(
+    stream1: ReadableStream<Uint8Array>,
+    getStream2: () => Promise<ReadableStream<Uint8Array>>,
+): ReadableStream<Uint8Array> {
+    let reader: ReadableStreamDefaultReader<Uint8Array> | null = null
+    let readingFirst = true
+    let heartbeatInterval: any = null
+
+    return new ReadableStream<Uint8Array>({
+        async start(controller) {
+            // 1. 发送初始的加载提示语，消除首字延迟，确保前台第 1 秒就有反应
+            const introText = `0:"[系统提示] 正在调用 Qwen3.6-27B 视觉模型识别手绘流程图，复杂识别与深度推理大约需要 30-60 秒，请稍候...\\n\\n"\n`
+            controller.enqueue(new TextEncoder().encode(introText))
+
+            // 2. 启动 5 秒一次的保活心跳，发送空文本 delta 以保持 HTTP 连接活跃，防止网关因无数据流出而断开
+            heartbeatInterval = setInterval(() => {
+                try {
+                    controller.enqueue(new TextEncoder().encode('0:""\n'))
+                } catch (e) {
+                    if (heartbeatInterval) {
+                        clearInterval(heartbeatInterval)
+                        heartbeatInterval = null
+                    }
+                }
+            }, 5000)
+
+            reader = stream1.getReader()
+        },
+        async pull(controller) {
+            if (!reader) return
+            try {
+                const { done, value } = await reader.read()
+                if (done) {
+                    if (readingFirst) {
+                        readingFirst = false
+                        const stream2 = await getStream2()
+                        reader = stream2.getReader()
+                        const next = await reader.read()
+                        if (next.done) {
+                            if (heartbeatInterval) {
+                                clearInterval(heartbeatInterval)
+                                heartbeatInterval = null
+                            }
+                            controller.close()
+                            reader = null
+                        } else {
+                            controller.enqueue(next.value)
+                        }
+                    } else {
+                        if (heartbeatInterval) {
+                            clearInterval(heartbeatInterval)
+                            heartbeatInterval = null
+                        }
+                        controller.close()
+                        reader = null
+                    }
+                } else {
+                    controller.enqueue(value)
+                }
+            } catch (err) {
+                if (heartbeatInterval) {
+                    clearInterval(heartbeatInterval)
+                    heartbeatInterval = null
+                }
+                controller.error(err)
+            }
+        },
+        cancel() {
+            if (heartbeatInterval) {
+                clearInterval(heartbeatInterval)
+                heartbeatInterval = null
+            }
+            if (reader) {
+                reader.cancel()
+            }
+        },
+    })
 }
