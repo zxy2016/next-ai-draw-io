@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronRight, Github, Info, Moon, Sun, Tag } from "lucide-react"
+import { ChevronRight, Info, MessageSquare, Moon, Sun } from "lucide-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { Suspense, useCallback, useEffect, useState } from "react"
 import { toast } from "sonner"
@@ -317,7 +317,7 @@ function SettingsContent({
             </DialogHeader>
 
             {/* Content */}
-            <div className="px-6 pb-6 overflow-y-auto flex-1 scrollbar-thin">
+            <div className="px-6 pb-6 overflow-y-auto overflow-x-hidden flex-1 scrollbar-thin">
                 <div className="divide-y divide-border-subtle">
                     {/* API Keys & Models */}
                     {onOpenModelConfig && (
@@ -354,28 +354,46 @@ function SettingsContent({
                                     {dict.settings.accessCodeDescription}
                                 </p>
                             </div>
-                            <div className="flex gap-2">
-                                <Input
-                                    id="access-code"
-                                    type="password"
-                                    value={accessCode}
-                                    onChange={(e) =>
-                                        setAccessCode(e.target.value)
-                                    }
-                                    onKeyDown={handleKeyDown}
-                                    placeholder={
-                                        dict.settings.accessCodePlaceholder
-                                    }
-                                    autoComplete="off"
-                                    className="h-9"
-                                />
-                                <Button
-                                    onClick={handleSave}
-                                    disabled={isVerifying || !accessCode.trim()}
-                                    className="h-9 px-4 rounded-xl"
-                                >
-                                    {isVerifying ? "..." : dict.common.save}
-                                </Button>
+                            <div className="relative overflow-visible">
+                                {accessCodeRequired && !accessCode.trim() && (
+                                    <>
+                                        {/* 炫彩渐变光晕背景，利用模糊产生高级外发光 */}
+                                        <div
+                                            className="absolute -inset-1.5 rounded-xl bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 opacity-75 blur-md animate-pulse pointer-events-none z-0"
+                                            data-testid="access-code-pulse-glow"
+                                        />
+                                        {/* 动态扩散的波纹边缘 */}
+                                        <div
+                                            className="absolute -inset-1.5 rounded-xl border border-indigo-500/80 animate-subtle-ping opacity-30 pointer-events-none z-0"
+                                            data-testid="access-code-ping-wave"
+                                        />
+                                    </>
+                                )}
+                                <div className="relative z-10 flex gap-2">
+                                    <Input
+                                        id="access-code"
+                                        type="password"
+                                        value={accessCode}
+                                        onChange={(e) =>
+                                            setAccessCode(e.target.value)
+                                        }
+                                        onKeyDown={handleKeyDown}
+                                        placeholder={
+                                            dict.settings.accessCodePlaceholder
+                                        }
+                                        autoComplete="off"
+                                        className="h-9 bg-surface-1 dark:bg-surface-1"
+                                    />
+                                    <Button
+                                        onClick={handleSave}
+                                        disabled={
+                                            isVerifying || !accessCode.trim()
+                                        }
+                                        className="h-9 px-4 rounded-xl shrink-0"
+                                    >
+                                        {isVerifying ? "..." : dict.common.save}
+                                    </Button>
+                                </div>
                             </div>
                             {error && (
                                 <p className="text-xs text-destructive">
@@ -545,25 +563,6 @@ function SettingsContent({
                         </div>
                     </SettingItem>
 
-                    {/* VLM Diagram Validation */}
-                    <SettingItem
-                        label={dict.settings.diagramValidation}
-                        description={dict.settings.diagramValidationDescription}
-                    >
-                        <div className="flex items-center gap-2">
-                            <Switch
-                                id="vlm-validation"
-                                checked={vlmValidationEnabled}
-                                onCheckedChange={onVlmValidationChange}
-                            />
-                            <span className="text-sm text-muted-foreground">
-                                {vlmValidationEnabled
-                                    ? dict.settings.enabled
-                                    : dict.settings.disabled}
-                            </span>
-                        </div>
-                    </SettingItem>
-
                     {/* Custom System Message */}
                     <div className="py-4 space-y-3">
                         <div className="space-y-0.5">
@@ -681,19 +680,14 @@ function SettingsContent({
             {/* Footer */}
             <div className="px-6 py-4 border-t border-border-subtle bg-surface-1/50 rounded-b-2xl">
                 <div className="flex items-center justify-center gap-3">
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Tag className="h-3 w-3" />
-                        {process.env.APP_VERSION}
-                    </span>
-                    <span className="text-muted-foreground">·</span>
                     <a
-                        href="https://github.com/DayuanJiang/next-ai-draw-io"
+                        href="https://ihaier.feishu.cn/base/A5YAbK9hra3gOTspK05citszn8e?table=tblS8TQwTU1eLw2g&view=vewyEQZsT7"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
                     >
-                        <Github className="h-3 w-3" />
-                        GitHub
+                        <MessageSquare className="h-3 w-3" />
+                        {dict.nav.feedback}
                     </a>
                     {process.env.NEXT_PUBLIC_SHOW_ABOUT_AND_NOTICE ===
                         "true" && (

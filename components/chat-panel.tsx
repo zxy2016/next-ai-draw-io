@@ -218,6 +218,16 @@ export default function ChatPanel({
                 setDailyRequestLimit(data.dailyRequestLimit || 0)
                 setDailyTokenLimit(data.dailyTokenLimit || 0)
                 setTpmLimit(data.tpmLimit || 0)
+
+                // Check if access code is required but not stored in localStorage
+                if (data.accessCodeRequired) {
+                    const storedCode = localStorage.getItem(
+                        STORAGE_KEYS.accessCode,
+                    )
+                    if (!storedCode) {
+                        setShowSettingsDialog(true)
+                    }
+                }
             })
             .catch(() => {})
     }, [])

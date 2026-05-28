@@ -15,6 +15,7 @@
         "editor": "エディタ",
         "newChat": "新しいチャットを開始",
         "github": "GitHub",
+        "feedback": "フィードバック",
         "settings": "設定",
         "hidePanel": "チャットパネルを非表示 (Ctrl+B)",
         "showPanel": "チャットパネルを表示 (Ctrl+B)",
