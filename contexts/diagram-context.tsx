@@ -27,6 +27,7 @@ interface DiagramContextType {
     ) => string | null
     handleExport: () => void
     handleExportWithoutHistory: () => void
+    fetchChart: (saveToHistory?: boolean) => Promise<string>
     resolverRef: React.MutableRefObject<((value: string) => void) | null>
     drawioRef: React.MutableRefObject<DrawIoEmbedRef | null>
     handleDiagramExport: (data: any) => void
@@ -113,6 +114,31 @@ export function DiagramProvider({ children }: { children: React.ReactNode }) {
                 format: "xmlsvg",
             })
         }
+    }
+
+    const fetchChart = (saveToHistory = true): Promise<string> => {
+        if (!drawioRef.current || !isDrawioReady) {
+            return Promise.resolve(chartXML || "")
+        }
+        return Promise.race([
+            new Promise<string>((resolve) => {
+                resolverRef.current = resolve
+                if (saveToHistory) {
+                    handleExport()
+                } else {
+                    handleExportWithoutHistory()
+                }
+            }),
+            new Promise<string>((_, reject) => {
+                const currentResolver = resolverRef.current
+                setTimeout(() => {
+                    if (resolverRef.current === currentResolver) {
+                        resolverRef.current = null
+                    }
+                    reject(new Error("Chart export timed out after 10 seconds"))
+                }, 10000)
+            }),
+        ])
     }
 
     // Get current diagram as SVG for thumbnail (used by session storage)
@@ -455,6 +481,7 @@ export function DiagramProvider({ children }: { children: React.ReactNode }) {
                 resetDrawioReady,
                 showSaveDialog,
                 setShowSaveDialog,
+                fetchChart,
             }}
         >
             {children}

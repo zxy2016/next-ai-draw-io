@@ -126,8 +126,6 @@ export default function ChatPanel({
     const {
         loadDiagram: onDisplayChart,
         handleExport: onExport,
-        handleExportWithoutHistory,
-        resolverRef,
         chartXML,
         latestSvg,
         clearDiagram,
@@ -135,6 +133,7 @@ export default function ChatPanel({
         captureValidationPng,
         diagramHistory,
         setDiagramHistory,
+        fetchChart: onFetchChart,
     } = useDiagram()
 
     const dict = useDictionary()
@@ -142,28 +141,6 @@ export default function ChatPanel({
     const pathname = usePathname()
     const searchParams = useSearchParams()
     const urlSessionId = searchParams.get("session")
-
-    const onFetchChart = (saveToHistory = true) => {
-        return Promise.race([
-            new Promise<string>((resolve) => {
-                resolverRef.current = resolve
-                if (saveToHistory) {
-                    onExport()
-                } else {
-                    handleExportWithoutHistory()
-                }
-            }),
-            new Promise<string>((_, reject) => {
-                const currentResolver = resolverRef.current
-                setTimeout(() => {
-                    if (resolverRef.current === currentResolver) {
-                        resolverRef.current = null
-                    }
-                    reject(new Error("Chart export timed out after 10 seconds"))
-                }, 10000)
-            }),
-        ])
-    }
 
     // File processing using extracted hook
     const { files, pdfData, handleFileChange, setFiles } = useFileProcessor()
