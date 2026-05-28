@@ -33,6 +33,7 @@ import {
     wrapWithObserve,
 } from "@/lib/langfuse"
 import { findServerModelById } from "@/lib/server-model-config"
+import { analyzeFlowchartImages } from "@/lib/swimlane/vision"
 import { getSystemPromptForMode } from "@/lib/system-prompts"
 import { getToolsForMode, parseFlowMode } from "@/lib/tools"
 import { getUserIdFromRequest } from "@/lib/user-id"
@@ -277,21 +278,68 @@ async function handleChatRequest(req: Request): Promise<Response> {
         lastUserMessage?.parts?.filter((part: any) => part.type === "file") ||
         []
 
-    // Check if user is sending images to a model that doesn't support them
-    // AI SDK silently drops unsupported parts, so we need to catch this early
-    if (fileParts.length > 0 && !supportsImageInput(modelId)) {
-        return Response.json(
-            {
-                error: `The model "${modelId}" does not support image input. Please use a vision-capable model (e.g., GPT-4o, Claude, Gemini) or remove the image.`,
-            },
-            { status: 400 },
+    // 双阶段图片处理逻辑
+    let parsedImageDescription = ""
+    if (fileParts.length > 0) {
+        const hasVisionModel = !!process.env.VISION_MODEL
+        if (!hasVisionModel && !supportsImageInput(modelId)) {
+            return Response.json(
+                {
+                    error: `当前选用的模型 "${modelId}" 不支持图片输入。请在设置中切换到多模态模型（如 GPT-4o, Claude 3.5），或者配置环境变量 VISION_MODEL。`,
+                },
+                { status: 400 },
+            )
+        }
+
+        console.log(
+            `[route.ts] Detected ${fileParts.length} image file(s). Triggering visual pre-processing...`,
         )
+        try {
+            // 将 fileParts 转换为 analyzeFlowchartImages 接受的格式
+            const imagesToAnalyze = fileParts.map((part: any) => {
+                const base64Data = part.url.split(",")[1] || ""
+                const mimeType = part.mediaType || "image/jpeg"
+                return {
+                    mediaType: mimeType,
+                    base64: base64Data,
+                }
+            })
+
+            const mainModelConfig = {
+                model,
+                providerOptions,
+                headers,
+                modelId,
+                provider: resolvedProvider,
+            }
+            const visionResult = await analyzeFlowchartImages(
+                imagesToAnalyze,
+                mainModelConfig,
+                userInputText,
+            )
+            parsedImageDescription = visionResult.description
+            console.log(
+                `[route.ts] Image analysis completed. Description length: ${parsedImageDescription.length}`,
+            )
+        } catch (visionErr) {
+            console.error(`[route.ts] Visual analysis failed:`, visionErr)
+            return Response.json(
+                {
+                    error: `手绘流程图图片分析失败: ${visionErr instanceof Error ? visionErr.message : String(visionErr)}`,
+                },
+                { status: 500 },
+            )
+        }
     }
+
+    const finalUserInputText = parsedImageDescription
+        ? `${userInputText}\n\n[手绘流程图识别结果]\n${parsedImageDescription}`
+        : userInputText
 
     // User input only - XML is now in a separate cached system message
     const formattedUserInput = `User input:
 """md
-${userInputText}
+${finalUserInputText}
 """`
 
     // === SUGGEST_REPLIES STRIPPING START ===
@@ -431,15 +479,6 @@ ${userInputText}
             const contentParts: any[] = [
                 { type: "text", text: formattedUserInput },
             ]
-
-            // Add image parts back
-            for (const filePart of fileParts) {
-                contentParts.push({
-                    type: "image",
-                    image: filePart.url,
-                    mimeType: filePart.mediaType,
-                })
-            }
 
             enhancedMessages = [
                 ...enhancedMessages.slice(0, -1),

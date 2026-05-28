@@ -31,18 +31,17 @@ import { UrlInputDialog } from "@/components/url-input-dialog"
 import { useDiagram } from "@/contexts/diagram-context"
 import { useDictionary } from "@/hooks/use-dictionary"
 import { formatMessage } from "@/lib/i18n/utils"
-import { isPdfFile, isTextFile } from "@/lib/pdf-utils"
 import { STORAGE_KEYS } from "@/lib/storage"
 import type { FlattenedModel } from "@/lib/types/model-config"
 import { extractUrlContent, type UrlData } from "@/lib/url-utils"
 import { isRealDiagram } from "@/lib/utils"
 import { FilePreviewList } from "./file-preview-list"
 
-const MAX_IMAGE_SIZE = 2 * 1024 * 1024 // 2MB
-const MAX_FILES = 5
+const MAX_IMAGE_SIZE = 4 * 1024 * 1024 // 4MB
+const MAX_FILES = 3
 
 function isValidFileType(file: File): boolean {
-    return file.type.startsWith("image/") || isPdfFile(file) || isTextFile(file)
+    return file.type.startsWith("image/")
 }
 
 function formatFileSize(bytes: number): string {
@@ -95,9 +94,7 @@ function validateFiles(
             )
             continue
         }
-        // Only check size for images (PDFs/text files are extracted client-side, so file size doesn't matter)
-        const isExtractedFile = isPdfFile(file) || isTextFile(file)
-        if (!isExtractedFile && file.size > MAX_IMAGE_SIZE) {
+        if (file.size > MAX_IMAGE_SIZE) {
             const maxSizeMB = MAX_IMAGE_SIZE / 1024 / 1024
             errors.push(
                 formatMessage(dict.errors.fileExceeds, {
@@ -564,7 +561,7 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
                                 ref={fileInputRef}
                                 className="hidden"
                                 onChange={handleFileChange}
-                                accept="image/*,.pdf,application/pdf,text/*,.md,.markdown,.json,.csv,.xml,.yaml,.yml,.toml"
+                                accept="image/*"
                                 multiple
                                 disabled={isDisabled}
                             />

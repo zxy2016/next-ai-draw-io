@@ -38,7 +38,6 @@ import { getApiEndpoint } from "@/lib/base-path"
 import { findCachedResponse } from "@/lib/cached-responses"
 import type { DrawioTheme } from "@/lib/drawio-themes"
 import { formatMessage } from "@/lib/i18n/utils"
-import { isPdfFile, isTextFile } from "@/lib/pdf-utils"
 import { sanitizeMessages } from "@/lib/session-storage"
 import { STORAGE_KEYS } from "@/lib/storage"
 // SwimlaneIR 同名导出: 既是 zod schema (运行时校验) 也是 type (z.infer 推导)
@@ -1308,7 +1307,7 @@ ${JSON.stringify(parsed.data, null, 2)}
         sendChatMessageRef.current = sendChatMessage
     }, [sendChatMessage])
 
-    // Process files and append content to user text (handles PDF, text, and optionally images)
+    // Process files and append content to user text (handles compressed images)
     const processFilesAndAppendContent = async (
         baseText: string,
         files: File[],
@@ -1319,27 +1318,11 @@ ${JSON.stringify(parsed.data, null, 2)}
         let userText = baseText
 
         for (const file of files) {
-            if (isPdfFile(file)) {
-                const extracted = pdfData.get(file)
-                if (extracted?.text) {
-                    userText += `\n\n[PDF: ${file.name}]\n${extracted.text}`
-                }
-            } else if (isTextFile(file)) {
-                const extracted = pdfData.get(file)
-                if (extracted?.text) {
-                    userText += `\n\n[File: ${file.name}]\n${extracted.text}`
-                }
-            } else if (imageParts) {
-                // Handle as image (only if imageParts array provided)
-                const reader = new FileReader()
-                const dataUrl = await new Promise<string>((resolve) => {
-                    reader.onload = () => resolve(reader.result as string)
-                    reader.readAsDataURL(file)
-                })
-
+            const fileData = pdfData.get(file)
+            if (fileData?.base64Url && imageParts) {
                 imageParts.push({
                     type: "file",
-                    url: dataUrl,
+                    url: fileData.base64Url,
                     mediaType: file.type,
                 })
             }
