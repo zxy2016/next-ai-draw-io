@@ -275,4 +275,29 @@ describe("ChatPanel first-load access code check", () => {
         expect(lastCallProps.onDeleteAllSessions).toBeDefined()
         expect(typeof lastCallProps.onDeleteAllSessions).toBe("function")
     })
+
+    it("should render '流程专家智能体' subtitle next to HDraw title", () => {
+        // Mock fetch to prevent config check failure on render
+        const mockFetch = vi.fn().mockImplementation(() =>
+            Promise.resolve({
+                ok: true,
+                json: () => Promise.resolve({ accessCodeRequired: false }),
+            }),
+        )
+        globalThis.fetch = mockFetch as any
+
+        render(
+            <ChatPanel
+                isVisible={true}
+                onToggleVisibility={vi.fn()}
+                drawioUi="min"
+                onDrawioUiChange={vi.fn()}
+                darkMode={false}
+                onToggleDarkMode={vi.fn()}
+            />,
+        )
+
+        // 验证 "流程专家智能体" 文字存在于页面中
+        expect(screen.getByText(/流程专家智能体/)).toBeDefined()
+    })
 })

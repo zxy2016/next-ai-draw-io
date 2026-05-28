@@ -1520,6 +1520,11 @@ ${JSON.stringify(parsed.data, null, 2)}
                             >
                                 HDraw
                             </h1>
+                            <span
+                                className={`${isMobile ? "text-xs" : "text-sm"} font-medium text-muted-foreground whitespace-nowrap`}
+                            >
+                                · 流程专家智能体
+                            </span>
                         </div>
                     </button>
                     <div className="flex items-center gap-1 justify-end overflow-visible">
