@@ -106,14 +106,14 @@ export default function ExamplePanel({
         }
     }
 
-    const handlePdfExample = async () => {
-        setInput("Summarize this paper as a diagram")
+    const handleSketchExample = async () => {
+        setInput("帮我梳理这个流程")
 
         try {
-            const response = await fetch(getAssetUrl("/chain-of-thought.txt"))
+            const response = await fetch(getAssetUrl("/example_flow.jpg"))
             const blob = await response.blob()
-            const file = new File([blob], "chain-of-thought.txt", {
-                type: "text/plain",
+            const file = new File([blob], "example_flow.jpg", {
+                type: "image/jpeg",
             })
             setFiles([file])
         } catch (error) {
@@ -150,7 +150,7 @@ export default function ExamplePanel({
                         icon={<FileText className="w-4 h-4 text-primary" />}
                         title={dict.examples.paperToDiagram}
                         description={dict.examples.paperDescription}
-                        onClick={handlePdfExample}
+                        onClick={handleSketchExample}
                         isNew
                     />
 
