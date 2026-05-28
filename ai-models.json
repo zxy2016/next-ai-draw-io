@@ -1,0 +1,12 @@
+{
+    "providers": [
+        {
+            "name": "Internal DeepSeek",
+            "provider": "openai",
+            "models": ["DeepSeek-V4-Flash"],
+            "apiKeyEnv": "OPENAI_API_KEY",
+            "baseUrlEnv": "OPENAI_BASE_URL",
+            "default": true
+        }
+    ]
+}
