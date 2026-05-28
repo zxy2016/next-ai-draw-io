@@ -127,34 +127,50 @@ export function ModelSelector({
     const [showLabel, setShowLabel] = useState(true)
 
     // Threshold (px) under which we hide the label (tweak as needed)
-    const HIDE_THRESHOLD = 240
-    const SHOW_THRESHOLD = 260
+    const HIDE_THRESHOLD = 360
+    const SHOW_THRESHOLD = 380
     useEffect(() => {
-        const el = wrapperRef.current
-        if (!el) return
+        let active = true
+        let ro: ResizeObserver | null = null
 
-        const target = el.parentElement ?? el
+        const startObserving = () => {
+            const el = wrapperRef.current
+            if (!el) return
 
-        const ro = new ResizeObserver((entries) => {
-            for (const entry of entries) {
-                const width = entry.contentRect.width
-                setShowLabel((prev) => {
-                    // if currently showing and width dropped below hide threshold -> hide
-                    if (prev && width <= HIDE_THRESHOLD) return false
-                    // if currently hidden and width rose above show threshold -> show
-                    if (!prev && width >= SHOW_THRESHOLD) return true
-                    // otherwise keep previous state (hysteresis)
-                    return prev
-                })
+            const parent = el.parentElement
+            if (!parent) {
+                if (active) {
+                    requestAnimationFrame(startObserving)
+                }
+                return
             }
-        })
 
-        ro.observe(target)
+            ro = new ResizeObserver((entries) => {
+                for (const entry of entries) {
+                    const width = entry.contentRect.width
+                    setShowLabel((prev) => {
+                        // if currently showing and width dropped below hide threshold -> hide
+                        if (prev && width <= HIDE_THRESHOLD) return false
+                        // if currently hidden and width rose above show threshold -> show
+                        if (!prev && width >= SHOW_THRESHOLD) return true
+                        // otherwise keep previous state (hysteresis)
+                        return prev
+                    })
+                }
+            })
 
-        const initialWidth = target.getBoundingClientRect().width
-        setShowLabel(initialWidth >= SHOW_THRESHOLD)
+            ro.observe(parent)
 
-        return () => ro.disconnect()
+            const initialWidth = parent.getBoundingClientRect().width
+            setShowLabel(initialWidth >= SHOW_THRESHOLD)
+        }
+
+        startObserving()
+
+        return () => {
+            active = false
+            if (ro) ro.disconnect()
+        }
     }, [])
 
     return (
