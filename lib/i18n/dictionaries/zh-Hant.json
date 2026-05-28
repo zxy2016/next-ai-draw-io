@@ -70,6 +70,8 @@
         "title": "用 AI 建立圖表",
         "subtitle": "描述您想要建立的內容或上傳圖片進行複製",
         "quickExamples": "快速範例",
+        "swimlaneDiagram": "二維泳道圖",
+        "swimlaneDescription": "繪製跨部門的財務報銷流程泳道圖",
         "paperToDiagram": "手繪圖轉圖表",
         "paperDescription": "上傳手繪圖或流程草圖圖片進行識別",
         "animatedDiagram": "動畫圖表",

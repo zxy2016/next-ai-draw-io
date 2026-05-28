@@ -4,6 +4,7 @@ import {
     Cloud,
     FileText,
     GitBranch,
+    LayoutGrid,
     Palette,
     Terminal,
     Zap,
@@ -79,7 +80,7 @@ export default function ExamplePanel({
     const dict = useDictionary()
 
     const handleReplicateFlowchart = async () => {
-        setInput("Replicate this flowchart.")
+        setInput("帮我复制这个流程图")
 
         try {
             const response = await fetch(getAssetUrl("/example.png"))
@@ -92,7 +93,7 @@ export default function ExamplePanel({
     }
 
     const handleReplicateArchitecture = async () => {
-        setInput("Replicate this in aws style")
+        setInput("用 AWS 风格复制这个架构图")
 
         try {
             const response = await fetch(getAssetUrl("/architecture.png"))
@@ -147,11 +148,23 @@ export default function ExamplePanel({
 
                 <div className="grid gap-2">
                     <ExampleCard
+                        icon={<LayoutGrid className="w-4 h-4 text-primary" />}
+                        title={dict.examples.swimlaneDiagram}
+                        description={dict.examples.swimlaneDescription}
+                        onClick={() => {
+                            setInput(
+                                "帮我梳理财务报销流程。\n参与角色：员工、直线经理、财务共享。\n主要步骤：\n1. 员工填写报销申请单，附上发票\n2. 直线经理审核业务合理性并审批确认\n3. 财务共享核查发票合规性及报销金额\n4. 审批通过后财务部完成付款并归档",
+                            )
+                            setFiles([])
+                        }}
+                        isNew
+                    />
+
+                    <ExampleCard
                         icon={<FileText className="w-4 h-4 text-primary" />}
                         title={dict.examples.paperToDiagram}
                         description={dict.examples.paperDescription}
                         onClick={handleSketchExample}
-                        isNew
                     />
 
                     <ExampleCard
@@ -160,7 +173,7 @@ export default function ExamplePanel({
                         description={dict.examples.animatedDescription}
                         onClick={() => {
                             setInput(
-                                "Give me a **animated connector** diagram of transformer's architecture",
+                                "用带动画连接器的图表展示 Transformer 架构",
                             )
                             setFiles([])
                         }}
@@ -185,7 +198,7 @@ export default function ExamplePanel({
                         title={dict.examples.creativeDrawing}
                         description={dict.examples.creativeDescription}
                         onClick={() => {
-                            setInput("Draw a cat for me")
+                            setInput("帮我画一只猫")
                             setFiles([])
                         }}
                     />

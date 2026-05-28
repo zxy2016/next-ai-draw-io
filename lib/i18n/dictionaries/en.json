@@ -70,6 +70,8 @@
         "title": "Create diagrams with AI",
         "subtitle": "Describe what you want to create or upload an image to replicate",
         "quickExamples": "Quick Examples",
+        "swimlaneDiagram": "2D Swimlane Diagram",
+        "swimlaneDescription": "Draw a cross-department financial reimbursement swimlane",
         "paperToDiagram": "Sketch to Diagram",
         "paperDescription": "Upload flowchart sketch or drawing to analyze",
         "animatedDiagram": "Animated Diagram",

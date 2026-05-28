@@ -70,6 +70,8 @@
         "title": "AI でダイアグラムを作成",
         "subtitle": "作成したいものを説明するか、画像をアップロードして複製",
         "quickExamples": "クイック例",
+        "swimlaneDiagram": "2次元スイムレーン図",
+        "swimlaneDescription": "部門をまたいだ経費精算プロセスのスイムレーン図を描画",
         "paperToDiagram": "手書きスケッチから図を作成",
         "paperDescription": "手書きのフローチャートやスケッチ画像をアップロードして識別",
         "animatedDiagram": "アニメーション図",
