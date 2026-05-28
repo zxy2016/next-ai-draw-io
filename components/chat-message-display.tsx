@@ -1196,6 +1196,21 @@ export function ChatMessageDisplay({
                                                     }
 
                                                     // Content bubble
+                                                    const isEmptyContent =
+                                                        group.parts.every(
+                                                            (part) =>
+                                                                part.type ===
+                                                                    "text" &&
+                                                                !(
+                                                                    part as {
+                                                                        text?: string
+                                                                    }
+                                                                ).text?.trim(),
+                                                        )
+                                                    if (isEmptyContent) {
+                                                        return null
+                                                    }
+
                                                     return (
                                                         <div
                                                             key={`${message.id}-content-${group.startIndex}`}
