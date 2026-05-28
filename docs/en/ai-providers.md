@@ -1,6 +1,6 @@
 # AI Provider Configuration
 
-This guide explains how to configure different AI model providers for next-ai-draw-io.
+This guide explains how to configure different AI model providers for hdraw.
 
 ## Quick Start
 

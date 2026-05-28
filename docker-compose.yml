@@ -2,16 +2,16 @@ services:
   drawio:
     image: jgraph/drawio:latest
     ports: ["8080:8080"]
-  next-ai-draw-io:
+  hdraw:
     build:
       context: .
       args:
         - NEXT_PUBLIC_DRAWIO_BASE_URL=http://localhost:8080
         # Uncomment below for subdirectory deployment
-        # - NEXT_PUBLIC_BASE_PATH=/nextaidrawio
+        # - NEXT_PUBLIC_BASE_PATH=/hdraw
     ports: ["3000:3000"]
     env_file: .env
     # environment:
     #   # For subdirectory deployment, uncomment and set your path:
-    #   NEXT_PUBLIC_BASE_PATH: /nextaidrawio
+    #   NEXT_PUBLIC_BASE_PATH: /hdraw
     depends_on: [drawio]

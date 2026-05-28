@@ -53,11 +53,11 @@ import { ChatMessageDisplay } from "./chat-message-display"
 import { DevXmlSimulator } from "./dev-xml-simulator"
 
 // localStorage keys for persistence
-const STORAGE_SESSION_ID_KEY = "next-ai-draw-io-session-id"
-const STORAGE_FLOW_MODE_KEY = "next-ai-draw-io-flow-mode"
+const STORAGE_SESSION_ID_KEY = "hdraw-session-id"
+const STORAGE_FLOW_MODE_KEY = "hdraw-flow-mode"
 
 // sessionStorage keys
-const SESSION_STORAGE_INPUT_KEY = "next-ai-draw-io-input"
+const SESSION_STORAGE_INPUT_KEY = "hdraw-input"
 
 // Type for message parts (tool calls and their states)
 interface MessagePart {
@@ -1514,7 +1514,7 @@ ${JSON.stringify(parsed.data, null, 2)}
                                         ? "/favicon-white.svg"
                                         : "/favicon.ico"
                                 }
-                                alt="Next AI Drawio"
+                                alt="HDraw"
                                 width={isMobile ? 24 : 28}
                                 height={isMobile ? 24 : 28}
                                 className="rounded flex-shrink-0"
@@ -1522,7 +1522,7 @@ ${JSON.stringify(parsed.data, null, 2)}
                             <h1
                                 className={`${isMobile ? "text-sm" : "text-base"} font-semibold tracking-tight whitespace-nowrap`}
                             >
-                                Next AI Drawio
+                                HDraw
                             </h1>
                         </div>
                     </button>

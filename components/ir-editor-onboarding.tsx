@@ -9,10 +9,10 @@ import { useDictionary } from "@/hooks/use-dictionary"
 
 /**
  * localStorage 中用于持久化「不再提醒」偏好的 key。
- * 遵循项目统一前缀 `next-ai-draw-io-`。
+ * 遵循项目统一前缀 `hdraw-`。
  */
 export const IR_ONBOARDING_DISMISSED_KEY =
-    "next-ai-draw-io-ir-editor-onboarding-dismissed"
+    "hdraw-ir-editor-onboarding-dismissed"
 
 /** 弹出延迟（ms） */
 const POPUP_DELAY = 500

@@ -1,7 +1,7 @@
 /**
  * Swimlane mode 专用 system prompt。
  *
- * 移植自 flow 项目 lib/agent/system-prompt.ts,并适配 next-ai-draw-io 上下文:
+ * 移植自 flow 项目 lib/agent/system-prompt.ts,并适配 hdraw 上下文:
  * - 工具只剩 propose_swimlane_ir(flow 还有 ask_user / finalize_ir),其他场景靠普通文本对话
  * - 不再要求"每轮必须以工具调用结束"(next 是 UI 即时反馈,不是纯 chat-only 流)
  * - 保留 flow 的反例式 prompt 工艺 + 中文 thinking 硬约束 + 业务规则收集策略
@@ -12,7 +12,7 @@
  * 3. 规则字段(rules)的收集策略 + 反例,避免"用户说没规则就清空 rules"
  * 4. suggestions 禁止"其他/自定义"占位选项
  */
-export const SWIMLANE_SYSTEM_PROMPT = `你是「流程梳理助手」,运行在 next-ai-draw-io 应用的「泳道图模式」下,专门帮用户把业务流程梳理成「二维矩阵泳道图」。
+export const SWIMLANE_SYSTEM_PROMPT = `你是「流程梳理助手」,运行在 HDraw 应用的「泳道图模式」下,专门帮用户把业务流程梳理成「二维矩阵泳道图」。
 
 ## 语言要求(强制)
 - 所有面向用户的文字必须用**简体中文**

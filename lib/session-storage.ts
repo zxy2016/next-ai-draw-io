@@ -3,10 +3,10 @@ import { nanoid } from "nanoid"
 import type { Template } from "./template-storage"
 
 // Constants
-const DB_NAME = "next-ai-drawio"
+const DB_NAME = "hdraw"
 const DB_VERSION = 2
 const STORE_NAME = "sessions"
-const MIGRATION_FLAG = "next-ai-drawio-migrated-to-idb"
+const MIGRATION_FLAG = "hdraw-migrated-to-idb"
 const MAX_SESSIONS = 50
 
 // Types
@@ -328,11 +328,9 @@ export async function migrateFromLocalStorage(): Promise<string | null> {
     if (localStorage.getItem(MIGRATION_FLAG)) return null
 
     try {
-        const savedMessages = localStorage.getItem("next-ai-draw-io-messages")
-        const savedSnapshots = localStorage.getItem(
-            "next-ai-draw-io-xml-snapshots",
-        )
-        const savedXml = localStorage.getItem("next-ai-draw-io-diagram-xml")
+        const savedMessages = localStorage.getItem("hdraw-messages")
+        const savedSnapshots = localStorage.getItem("hdraw-xml-snapshots")
+        const savedXml = localStorage.getItem("hdraw-diagram-xml")
 
         let newSessionId: string | null = null
         let migrationSucceeded = false
@@ -373,9 +371,9 @@ export async function migrateFromLocalStorage(): Promise<string | null> {
         // Only clean up old data if migration succeeded
         if (migrationSucceeded) {
             localStorage.setItem(MIGRATION_FLAG, "true")
-            localStorage.removeItem("next-ai-draw-io-messages")
-            localStorage.removeItem("next-ai-draw-io-xml-snapshots")
-            localStorage.removeItem("next-ai-draw-io-diagram-xml")
+            localStorage.removeItem("hdraw-messages")
+            localStorage.removeItem("hdraw-xml-snapshots")
+            localStorage.removeItem("hdraw-diagram-xml")
         } else {
             console.warn(
                 "Migration to IndexedDB failed - keeping localStorage data for retry",

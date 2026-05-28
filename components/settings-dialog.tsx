@@ -77,8 +77,8 @@ interface SettingsDialogProps {
     onCustomSystemMessageChange?: (value: string) => void
 }
 
-export const STORAGE_ACCESS_CODE_KEY = "next-ai-draw-io-access-code"
-const STORAGE_ACCESS_CODE_REQUIRED_KEY = "next-ai-draw-io-access-code-required"
+export const STORAGE_ACCESS_CODE_KEY = "hdraw-access-code"
+const STORAGE_ACCESS_CODE_REQUIRED_KEY = "hdraw-access-code-required"
 
 function getStoredAccessCodeRequired(): boolean | null {
     if (typeof window === "undefined") return null
@@ -206,7 +206,7 @@ function SettingsContent({
 
     const changeLanguage = (lang: string) => {
         // Save locale to localStorage for persistence across restarts
-        localStorage.setItem("next-ai-draw-io-locale", lang)
+        localStorage.setItem("hdraw-locale", lang)
 
         // Notify Electron main process to update its menu language
         if (window.electronAPI?.setUserLocale) {

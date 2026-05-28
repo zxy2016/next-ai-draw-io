@@ -19,10 +19,10 @@ import {
 
 // Old storage keys for migration
 const OLD_KEYS = {
-    aiProvider: "next-ai-draw-io-ai-provider",
-    aiBaseUrl: "next-ai-draw-io-ai-base-url",
-    aiApiKey: "next-ai-draw-io-ai-api-key",
-    aiModel: "next-ai-draw-io-ai-model",
+    aiProvider: "hdraw-ai-provider",
+    aiBaseUrl: "hdraw-ai-base-url",
+    aiApiKey: "hdraw-ai-api-key",
+    aiModel: "hdraw-ai-model",
 }
 
 /**

@@ -1,4 +1,4 @@
-# Next AI Draw.io
+# HDraw
 
 <div align="center">
 
@@ -6,20 +6,20 @@
 
 English | [中文](./docs/cn/README_CN.md) | [日本語](./docs/ja/README_JA.md)
 
-[![TrendShift](https://trendshift.io/api/badge/repositories/15449)](https://next-ai-drawio.jiang.jp/)
+[![TrendShift](https://trendshift.io/api/badge/repositories/15449)](https://hdraw.jiang.jp/)
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Next.js](https://img.shields.io/badge/Next.js-16.x-black)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.x-61dafb)](https://react.dev/)
 [![Sponsor](https://img.shields.io/badge/Sponsor-❤-ea4aaa)](https://github.com/sponsors/DayuanJiang)
 
-[![Live Demo](./public/live-demo-button.svg)](https://next-ai-drawio.jiang.jp/)
+[![Live Demo](./public/live-demo-button.svg)](https://hdraw.jiang.jp/)
 
 </div>
 
 A Next.js web application that integrates AI capabilities with draw.io diagrams. Create, modify, and enhance diagrams through natural language commands and AI-assisted visualization.
 
-> Note: Thanks to <img src="https://raw.githubusercontent.com/DayuanJiang/next-ai-draw-io/main/public/doubao-color.png" alt="" height="20" /> [ByteDance Doubao](https://www.volcengine.com/activity/codingplan?ac=MMAP8JTTCAQ2&rc=Z9Z3LDTJ&utm_campaign=drawio&utm_content=drawio&utm_medium=devrel&utm_source=OWO&utm_term=drawio) sponsorship, the demo site now uses the powerful glm-4.7 model!
+> Note: Thanks to <img src="https://raw.githubusercontent.com/DayuanJiang/hdraw/main/public/doubao-color.png" alt="" height="20" /> [ByteDance Doubao](https://www.volcengine.com/activity/codingplan?ac=MMAP8JTTCAQ2&rc=Z9Z3LDTJ&utm_campaign=drawio&utm_content=drawio&utm_medium=devrel&utm_source=OWO&utm_term=drawio) sponsorship, the demo site now uses the powerful glm-4.7 model!
 
 
 https://github.com/user-attachments/assets/9d60a3e8-4a1c-4b5e-acbb-26af2d3eabd1
@@ -27,7 +27,7 @@ https://github.com/user-attachments/assets/9d60a3e8-4a1c-4b5e-acbb-26af2d3eabd1
 
 
 ## Table of Contents
-- [Next AI Draw.io](#next-ai-drawio)
+- [HDraw](#hdraw)
   - [Table of Contents](#table-of-contents)
   - [Examples](#examples)
   - [Features](#features)
@@ -101,14 +101,14 @@ Here are some example prompts and their generated diagrams:
 
 ## MCP Server
 
-Use Next AI Draw.io with AI agents like Claude Desktop, Cursor, and VS Code via MCP (Model Context Protocol).
+Use HDraw with AI agents like Claude Desktop, Cursor, and VS Code via MCP (Model Context Protocol).
 
 ```json
 {
   "mcpServers": {
     "drawio": {
       "command": "npx",
-      "args": ["@next-ai-drawio/mcp-server@latest"]
+      "args": ["@hdraw/mcp-server@latest"]
     }
   }
 }
@@ -117,7 +117,7 @@ Use Next AI Draw.io with AI agents like Claude Desktop, Cursor, and VS Code via 
 ### Claude Code CLI
 
 ```bash
-claude mcp add drawio -- npx @next-ai-drawio/mcp-server@latest
+claude mcp add drawio -- npx @hdraw/mcp-server@latest
 ```
 
 Then ask Claude to create diagrams:
@@ -133,7 +133,7 @@ See the [MCP Server README](./packages/mcp-server/README.md) for VS Code, Cursor
 
 No installation needed! Try the app directly on our demo site:
 
-[![Live Demo](./public/live-demo-button.svg)](https://next-ai-drawio.jiang.jp/)
+[![Live Demo](./public/live-demo-button.svg)](https://hdraw.jiang.jp/)
 
 
 
@@ -141,7 +141,7 @@ No installation needed! Try the app directly on our demo site:
 
 ### Desktop Application
 
-Download the native desktop app for your platform from the [Releases page](https://github.com/DayuanJiang/next-ai-draw-io/releases):
+Download the native desktop app for your platform from the [Releases page](https://github.com/DayuanJiang/hdraw/releases):
 
 Supported platforms: Windows, macOS, Linux.
 
@@ -154,8 +154,8 @@ Supported platforms: Windows, macOS, Linux.
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/DayuanJiang/next-ai-draw-io
-cd next-ai-draw-io
+git clone https://github.com/DayuanJiang/hdraw
+cd hdraw
 npm install
 cp env.example .env.local
 ```
@@ -178,7 +178,7 @@ You can deploy with one click using [Tencent EdgeOne Pages](https://pages.edgeon
 
 Deploy by this button: 
 
-[![Deploy to EdgeOne Pages](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://edgeone.ai/pages/new?repository-url=https%3A%2F%2Fgithub.com%2FDayuanJiang%2Fnext-ai-draw-io)
+[![Deploy to EdgeOne Pages](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://edgeone.ai/pages/new?repository-url=https%3A%2F%2Fgithub.com%2FDayuanJiang%2Fhdraw)
 
 Check out the [Tencent EdgeOne Pages documentation](https://pages.edgeone.ai/document/deployment-overview) for more details.
 
@@ -186,7 +186,7 @@ Additionally, deploying through Tencent EdgeOne Pages will also grant you a [dai
 
 ### Deploy on Vercel 
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FDayuanJiang%2Fnext-ai-draw-io)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FDayuanJiang%2Fhdraw)
 
 The easiest way to deploy is using [Vercel](https://vercel.com/new), the creators of Next.js. Be sure to **set the environment variables** in the Vercel dashboard as you did in your local `.env.local` file.
 
@@ -256,6 +256,6 @@ See [FAQ](./docs/en/FAQ.md) for common issues and solutions.
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=DayuanJiang/next-ai-draw-io&type=date&legend=top-left)](https://www.star-history.com/#DayuanJiang/next-ai-draw-io&type=date&legend=top-left)
+[![Star History Chart](https://api.star-history.com/svg?repos=DayuanJiang/hdraw&type=date&legend=top-left)](https://www.star-history.com/#DayuanJiang/hdraw&type=date&legend=top-left)
 
 ---

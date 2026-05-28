@@ -1,4 +1,4 @@
-# Next AI Draw.io
+# HDraw
 
 <div align="center">
 
@@ -6,25 +6,25 @@
 
 [English](../../README.md) | [中文](../cn/README_CN.md) | 日本語
 
-[![TrendShift](https://trendshift.io/api/badge/repositories/15449)](https://next-ai-drawio.jiang.jp/)
+[![TrendShift](https://trendshift.io/api/badge/repositories/15449)](https://hdraw.jiang.jp/)
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Next.js](https://img.shields.io/badge/Next.js-16.x-black)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.x-61dafb)](https://react.dev/)
 [![Sponsor](https://img.shields.io/badge/Sponsor-❤-ea4aaa)](https://github.com/sponsors/DayuanJiang)
 
-[![Live Demo](../../public/live-demo-button.svg)](https://next-ai-drawio.jiang.jp/)
+[![Live Demo](../../public/live-demo-button.svg)](https://hdraw.jiang.jp/)
 
 </div>
 
 AI機能とdraw.ioダイアグラムを統合したNext.jsウェブアプリケーションです。自然言語コマンドとAI支援の可視化により、ダイアグラムを作成、修正、強化できます。
 
-> 注：<img src="https://raw.githubusercontent.com/DayuanJiang/next-ai-draw-io/main/public/doubao-color.png" alt="" height="20" /> [ByteDance Doubao](https://www.volcengine.com/activity/codingplan?ac=MMAP8JTTCAQ2&rc=Z9Z3LDTJ&utm_campaign=drawio&utm_content=drawio&utm_medium=devrel&utm_source=OWO&utm_term=drawio) のご支援により、デモサイトに強力な glm-4.7 モデルを導入しました！
+> 注：<img src="https://raw.githubusercontent.com/DayuanJiang/hdraw/main/public/doubao-color.png" alt="" height="20" /> [ByteDance Doubao](https://www.volcengine.com/activity/codingplan?ac=MMAP8JTTCAQ2&rc=Z9Z3LDTJ&utm_campaign=drawio&utm_content=drawio&utm_medium=devrel&utm_source=OWO&utm_term=drawio) のご支援により、デモサイトに強力な glm-4.7 モデルを導入しました！
 
 https://github.com/user-attachments/assets/b2eef5f3-b335-4e71-a755-dc2e80931979
 
 ## 目次
-- [Next AI Draw.io](#next-ai-drawio)
+- [HDraw](#hdraw)
   - [目次](#目次)
   - [例](#例)
   - [機能](#機能)
@@ -98,14 +98,14 @@ https://github.com/user-attachments/assets/b2eef5f3-b335-4e71-a755-dc2e80931979
 
 ## MCPサーバー
 
-MCP（Model Context Protocol）を介して、Claude Desktop、Cursor、VS CodeなどのAIエージェントでNext AI Draw.ioを使用できます。
+MCP（Model Context Protocol）を介して、Claude Desktop、Cursor、VS CodeなどのAIエージェントでHDrawを使用できます。
 
 ```json
 {
   "mcpServers": {
     "drawio": {
       "command": "npx",
-      "args": ["@next-ai-drawio/mcp-server@latest"]
+      "args": ["@hdraw/mcp-server@latest"]
     }
   }
 }
@@ -114,7 +114,7 @@ MCP（Model Context Protocol）を介して、Claude Desktop、Cursor、VS Code�
 ### Claude Code CLI
 
 ```bash
-claude mcp add drawio -- npx @next-ai-drawio/mcp-server@latest
+claude mcp add drawio -- npx @hdraw/mcp-server@latest
 ```
 
 Claudeにダイアグラムの作成を依頼：
@@ -130,13 +130,13 @@ Claudeにダイアグラムの作成を依頼：
 
 インストール不要！デモサイトで直接お試しください：
 
-[![Live Demo](../../public/live-demo-button.svg)](https://next-ai-drawio.jiang.jp/)
+[![Live Demo](../../public/live-demo-button.svg)](https://hdraw.jiang.jp/)
 
 > **自分のAPIキーを使用**：自分のAPIキーを使用することで、デモサイトの利用制限を回避できます。チャットパネルの設定アイコンをクリックして、プロバイダーとAPIキーを設定してください。キーはブラウザのローカルに保存され、サーバーには保存されません。
 
 ### デスクトップアプリケーション
 
-[Releases ページ](https://github.com/DayuanJiang/next-ai-draw-io/releases)からお使いのプラットフォーム用のネイティブデスクトップアプリをダウンロードしてください：
+[Releases ページ](https://github.com/DayuanJiang/hdraw/releases)からお使いのプラットフォーム用のネイティブデスクトップアプリをダウンロードしてください：
 
 対応プラットフォーム：Windows、macOS、Linux。
 
@@ -149,8 +149,8 @@ Claudeにダイアグラムの作成を依頼：
 1. リポジトリをクローン：
 
 ```bash
-git clone https://github.com/DayuanJiang/next-ai-draw-io
-cd next-ai-draw-io
+git clone https://github.com/DayuanJiang/hdraw
+cd hdraw
 npm install
 cp env.example .env.local
 ```
@@ -173,7 +173,7 @@ npm run dev
 
 このボタンでデプロイ：
 
-[![Deploy to EdgeOne Pages](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://edgeone.ai/pages/new?repository-url=https%3A%2F%2Fgithub.com%2FDayuanJiang%2Fnext-ai-draw-io)
+[![Deploy to EdgeOne Pages](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://edgeone.ai/pages/new?repository-url=https%3A%2F%2Fgithub.com%2FDayuanJiang%2Fhdraw)
 
 詳細は[Tencent EdgeOne Pagesドキュメント](https://pages.edgeone.ai/document/deployment-overview)をご覧ください。
 
@@ -181,7 +181,7 @@ npm run dev
 
 ### Vercelへのデプロイ
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FDayuanJiang%2Fnext-ai-draw-io)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FDayuanJiang%2Fhdraw)
 
 Next.jsアプリをデプロイする最も簡単な方法は、Next.jsの作成者による[Vercelプラットフォーム](https://vercel.com/new)を使用することです。ローカルの`.env.local`ファイルと同様に、Vercelダッシュボードで**環境変数を設定**してください。
 
@@ -249,6 +249,6 @@ AWS BedrockとOpenRouter以外のすべてのプロバイダーはカスタム�
 
 ## スター履歴
 
-[![Star History Chart](https://api.star-history.com/svg?repos=DayuanJiang/next-ai-draw-io&type=date&legend=top-left)](https://www.star-history.com/#DayuanJiang/next-ai-draw-io&type=date&legend=top-left)
+[![Star History Chart](https://api.star-history.com/svg?repos=DayuanJiang/hdraw&type=date&legend=top-left)](https://www.star-history.com/#DayuanJiang/hdraw&type=date&legend=top-left)
 
 ---
