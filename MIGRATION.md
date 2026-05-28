@@ -1,10 +1,10 @@
 # Migration Log
 
-记录从 `flow` 项目融合到 `next-ai-draw-io` 的所有改动。
+记录从 `flow` 项目融合到 `hdraw` 的所有改动。
 
 **目的**：
 
-1. 让上游 (`upstream/main` = DayuanJiang/next-ai-draw-io) 同步时能快速识别冲突域
+1. 让上游 (`upstream/main` = DayuanJiang/hdraw) 同步时能快速识别冲突域
 2. 让后续维护者一眼看清"哪些是我们加的、哪些来自上游"
 3. 给可能的反向贡献（推回上游）保留清晰边界
 

@@ -4,7 +4,7 @@ import path from "node:path"
 import { z } from "zod"
 
 /**
- * 通用 free mode 工具集（next-ai-draw-io 默认模式）。
+ * 通用 free mode 工具集（hdraw 默认模式）。
  *
  * 设计原则:
  * - 工具 schema + description + execute 集中此处,避免散落在 route.ts

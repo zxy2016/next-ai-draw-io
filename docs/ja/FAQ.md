@@ -28,7 +28,7 @@ services:
   drawio:
     image: jgraph/drawio:latest
     ports: ["8080:8080"]
-  next-ai-draw-io:
+  hdraw:
     build:
       context: .
       args:

@@ -140,7 +140,7 @@ describe("SettingsDialog", () => {
         const links = screen.queryAllByRole("link")
         const hasGithubLink = links.some((link) => {
             const href = link.getAttribute("href")
-            return href?.includes("github.com/DayuanJiang/next-ai-draw-io")
+            return href?.includes("github.com/DayuanJiang/hdraw")
         })
         expect(hasGithubLink).toBe(false)
     })
@@ -194,8 +194,8 @@ describe("SettingsDialog", () => {
 
     it("should render access code pulse and ping effect when access code is required but empty", () => {
         // Set up localStorage mocks
-        localStorageMock.setItem("next-ai-draw-io-access-code-required", "true")
-        localStorageMock.setItem("next-ai-draw-io-access-code", "")
+        localStorageMock.setItem("hdraw-access-code-required", "true")
+        localStorageMock.setItem("hdraw-access-code", "")
 
         // Mock global fetch to return accessCodeRequired: true
         const mockFetch = vi.fn().mockImplementation(() =>
@@ -224,8 +224,8 @@ describe("SettingsDialog", () => {
 
     it("should NOT render access code pulse and ping effect when access code is already stored", () => {
         // Set up localStorage mocks
-        localStorageMock.setItem("next-ai-draw-io-access-code-required", "true")
-        localStorageMock.setItem("next-ai-draw-io-access-code", "valid-code")
+        localStorageMock.setItem("hdraw-access-code-required", "true")
+        localStorageMock.setItem("hdraw-access-code", "valid-code")
 
         // Mock global fetch to return accessCodeRequired: true
         const mockFetch = vi.fn().mockImplementation(() =>

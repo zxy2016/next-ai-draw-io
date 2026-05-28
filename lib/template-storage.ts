@@ -2,7 +2,7 @@ import { type DBSchema, type IDBPDatabase, openDB } from "idb"
 import { nanoid } from "nanoid"
 
 // Constants
-const DB_NAME = "next-ai-drawio-templates"
+const DB_NAME = "hdraw-templates"
 const DB_VERSION = 1
 const STORE_NAME = "templates"
 

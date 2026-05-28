@@ -433,7 +433,7 @@ function getHtmlPage(sessionId: string): string {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Next AI Draw.io</title>
+    <title>HDraw</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -606,7 +606,7 @@ function getHtmlPage(sessionId: string): string {
                         </g>
                     </svg>
                 </div>
-                <span class="title">Next AI Draw.io</span>
+                <span class="title">HDraw</span>
                 ${sessionId ? `<span class="session">${sessionId.slice(-8)}</span>` : ""}
             </div>
             <div class="right">

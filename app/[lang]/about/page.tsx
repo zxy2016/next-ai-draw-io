@@ -4,7 +4,7 @@ import { FaGithub } from "react-icons/fa"
 import Image from "@/components/image-with-basepath"
 
 export const metadata: Metadata = {
-    title: "About - Next AI Draw.io",
+    title: "About - HDraw",
     description:
         "AI-Powered Diagram Creation Tool - Chat, Draw, Visualize. Create AWS, GCP, and Azure architecture diagrams with natural language.",
     keywords: [
@@ -28,7 +28,7 @@ export default function About() {
                             href="/"
                             className="text-xl font-bold text-gray-900 hover:text-gray-700"
                         >
-                            Next AI Draw.io
+                            HDraw
                         </Link>
                         <nav className="flex items-center gap-6 text-sm">
                             <Link
@@ -44,7 +44,7 @@ export default function About() {
                                 About
                             </Link>
                             <a
-                                href="https://github.com/DayuanJiang/next-ai-draw-io"
+                                href="https://github.com/DayuanJiang/hdraw"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-gray-600 hover:text-gray-900 transition-colors"
@@ -63,7 +63,7 @@ export default function About() {
                     {/* Title */}
                     <div className="text-center mb-8">
                         <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                            Next AI Draw.io
+                            HDraw
                         </h1>
                         <p className="text-xl text-gray-600 font-medium">
                             AI-Powered Diagram Creation Tool - Chat, Draw,
@@ -382,7 +382,7 @@ export default function About() {
                     <p className="text-gray-700 mt-2">
                         For support or inquiries, please open an issue on the{" "}
                         <a
-                            href="https://github.com/DayuanJiang/next-ai-draw-io"
+                            href="https://github.com/DayuanJiang/hdraw"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 hover:underline"
@@ -408,8 +408,7 @@ export default function About() {
             <footer className="bg-white border-t border-gray-200 mt-16">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                     <p className="text-center text-gray-600 text-sm">
-                        Next AI Draw.io - Open Source AI-Powered Diagram
-                        Generator
+                        HDraw - Open Source AI-Powered Diagram Generator
                     </p>
                 </div>
             </footer>

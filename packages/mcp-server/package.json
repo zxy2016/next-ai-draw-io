@@ -1,11 +1,11 @@
 {
-    "name": "@next-ai-drawio/mcp-server",
+    "name": "@hdraw/mcp-server",
     "version": "0.2.0",
-    "description": "MCP server for Next AI Draw.io - AI-powered diagram generation with real-time browser preview",
+    "description": "MCP server for HDraw - AI-powered diagram generation with real-time browser preview",
     "type": "module",
     "main": "dist/index.js",
     "bin": {
-        "next-ai-drawio-mcp": "./dist/index.js"
+        "hdraw-mcp": "./dist/index.js"
     },
     "scripts": {
         "build": "tsc",
@@ -25,12 +25,12 @@
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
-        "url": "https://github.com/DayuanJiang/next-ai-draw-io",
+        "url": "https://github.com/DayuanJiang/hdraw",
         "directory": "packages/mcp-server"
     },
-    "homepage": "https://next-ai-drawio.jiang.jp",
+    "homepage": "https://hdraw.jiang.jp",
     "bugs": {
-        "url": "https://github.com/DayuanJiang/next-ai-draw-io/issues"
+        "url": "https://github.com/DayuanJiang/hdraw/issues"
     },
     "publishConfig": {
         "access": "public"

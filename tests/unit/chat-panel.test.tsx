@@ -193,7 +193,7 @@ describe("ChatPanel first-load access code check", () => {
 
     it("should NOT auto-open SettingsDialog when accessCodeRequired is true but accessCode is already stored", async () => {
         // Set stored access code
-        localStorageMock.setItem("next-ai-draw-io-access-code", "valid-code")
+        localStorageMock.setItem("hdraw-access-code", "valid-code")
 
         // Mock fetch to return accessCodeRequired: true
         const mockFetch = vi.fn().mockImplementation(() =>

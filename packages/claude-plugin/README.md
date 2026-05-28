@@ -1,4 +1,4 @@
-# Next AI Draw.io - Claude Code Plugin
+# HDraw - Claude Code Plugin
 
 AI-powered Draw.io diagram generation with real-time browser preview for Claude Code.
 
@@ -8,7 +8,7 @@ AI-powered Draw.io diagram generation with real-time browser preview for Claude 
 
 Once approved, install via:
 ```
-/plugin install next-ai-drawio
+/plugin install hdraw
 ```
 
 ### Manual Installation
@@ -19,7 +19,7 @@ claude --plugin-dir /path/to/packages/claude-plugin
 
 Or add the MCP server directly:
 ```bash
-claude mcp add drawio -- npx @next-ai-drawio/mcp-server@latest
+claude mcp add drawio -- npx @hdraw/mcp-server@latest
 ```
 
 ## Features
@@ -98,9 +98,9 @@ Claude Code <--stdio--> MCP Server <--http--> Browser (draw.io)
 
 ## Links
 
-- [Homepage](https://next-ai-drawio.jiang.jp)
-- [GitHub Repository](https://github.com/DayuanJiang/next-ai-draw-io)
-- [MCP Server Documentation](https://github.com/DayuanJiang/next-ai-draw-io/tree/main/packages/mcp-server)
+- [Homepage](https://hdraw.jiang.jp)
+- [GitHub Repository](https://github.com/DayuanJiang/hdraw)
+- [MCP Server Documentation](https://github.com/DayuanJiang/hdraw/tree/main/packages/mcp-server)
 
 ## License
 

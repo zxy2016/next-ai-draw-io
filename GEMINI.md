@@ -1,12 +1,12 @@
-# Next AI Draw.io Project Rules & Context
+# HDraw Project Rules & Context
 
-本文件定义了 Next AI Draw.io 项目的技术架构、目录结构、开发工作流以及 AI 协同开发规范。AI 助手在每次启动会话时应自动读取本文件以遵循项目的技术约束和开发规范。
+本文件定义了 HDraw 项目的技术架构、目录结构、开发工作流以及 AI 协同开发规范。AI 助手在每次启动会话时应自动读取本文件以遵循项目的技术约束和开发规范。
 
 ---
 
 ## 1. 项目概述
 
-`next-ai-draw-io` 是一个集成了大语言模型（LLM）与 draw.io 的 AI 绘图平台项目。它允许用户使用自然语言、图片或上传的文档（PDF/文本）来生成、修改和优化复杂的图表。
+`hdraw` 是一个集成了大语言模型（LLM）与 draw.io 的 AI 绘图平台项目。它允许用户使用自然语言、图片或上传的文档（PDF/文本）来生成、修改和优化复杂的图表。
 项目支持多模型供应商，支持以 Next.js Web 应用程序运行、桌面端客户端（Electron）运行、Docker 镜像运行，并可快速部署至 Cloudflare Workers/Pages、Vercel 及 Tencent EdgeOne。
 
 ---
@@ -27,7 +27,7 @@
 ## 3. 项目目录结构
 
 ```text
-next-ai-draw-io/
+hdraw/
 ├── app/                      # Next.js 16 App Router
 │   ├── [lang]/               # 支持多语言路由的页面 (如主页 page.tsx 和布局 layout.tsx)
 │   ├── api/                  # API 端点 (chat, config, parse-url 等)
