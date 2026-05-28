@@ -42,6 +42,7 @@ import { sanitizeMessages } from "@/lib/session-storage"
 import { STORAGE_KEYS } from "@/lib/storage"
 // SwimlaneIR 同名导出: 既是 zod schema (运行时校验) 也是 type (z.infer 推导)
 import { SwimlaneIR } from "@/lib/swimlane/ir/schema"
+import { shouldTriggerFlowModePulse } from "@/lib/swimlane/utils"
 import { irToXml } from "@/lib/swimlane/xml/engine"
 import type { UrlData } from "@/lib/url-utils"
 import { type FileData, useFileProcessor } from "@/lib/use-file-processor"
@@ -173,6 +174,7 @@ export default function ChatPanel({
     // 状态时回传 setCurrentIr。模式切换 / new chat 时清空。
     const [currentIr, setCurrentIr] = useState<SwimlaneIR | null>(null)
     const [showIrEditor, setShowIrEditor] = useState(false)
+    const [showFlowModePulse, setShowFlowModePulse] = useState(false)
 
     // Restore input from sessionStorage on mount (when ChatPanel remounts due to key change)
     useEffect(() => {
@@ -509,7 +511,17 @@ export default function ChatPanel({
                 setShowSettingsDialog(true)
             }
         },
-        onFinish: () => {},
+        onFinish: ({ message }) => {
+            const textContent = message?.parts
+                ? message.parts
+                      .filter((part: any) => part.type === "text")
+                      .map((part: any) => part.text)
+                      .join("\n")
+                : ""
+            if (shouldTriggerFlowModePulse(textContent, flowMode)) {
+                setShowFlowModePulse(true)
+            }
+        },
         sendAutomaticallyWhen: ({ messages }) => {
             const isInContinuationMode = partialXmlRef.current.length > 0
 
@@ -1006,6 +1018,7 @@ export default function ChatPanel({
         setValidationStates({}) // Clear validation states to prevent memory leak
         handleFileChange([]) // Use handleFileChange to also clear pdfData
         setCurrentIr(null) // 清掉 swimlane mode 的 IR 缓存
+        setShowFlowModePulse(false)
         setUrlData(new Map())
         const newSessionId = `session-${Date.now()}-${Math.random()
             .toString(36)
@@ -1046,6 +1059,7 @@ export default function ChatPanel({
         // history doesn't confuse the model under the new tool set
         setMessages([])
         setCurrentIr(null) // 切回 free 模式时清空 IR 缓存
+        setShowFlowModePulse(false)
         toast.success(
             next === "swimlane"
                 ? "已切换到泳道图模式(Swimlane)"
@@ -1226,6 +1240,7 @@ ${JSON.stringify(parsed.data, null, 2)}
         autoRetryCountRef.current = 0
         continuationRetryCountRef.current = 0
         partialXmlRef.current = ""
+        setShowFlowModePulse(false)
 
         const config = getSelectedAIConfig()
 
@@ -1496,33 +1511,49 @@ ${JSON.stringify(parsed.data, null, 2)}
                         </div>
                     </button>
                     <div className="flex items-center gap-1 justify-end overflow-visible">
-                        <ButtonWithTooltip
-                            tooltipContent={
-                                flowMode === "swimlane"
-                                    ? "当前: 泳道图模式 (点击切回自由模式)"
-                                    : "当前: 自由模式 (点击切到泳道图模式)"
-                            }
-                            variant="ghost"
-                            size="icon"
-                            onClick={handleToggleFlowMode}
-                            disabled={
-                                status === "streaming" || status === "submitted"
-                            }
-                            className={`hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed ${
-                                flowMode === "swimlane"
-                                    ? "bg-accent text-primary"
-                                    : ""
-                            }`}
-                            data-testid="flow-mode-toggle"
+                        <div
+                            className={`relative inline-block ${showFlowModePulse ? "ir-pulse-animation overflow-visible" : ""}`}
+                            data-testid="flow-mode-pulse-wrapper"
                         >
-                            <Workflow
-                                className={`${isMobile ? "h-4 w-4" : "h-5 w-5"} ${
-                                    flowMode === "swimlane"
-                                        ? "text-primary"
-                                        : "text-muted-foreground"
-                                }`}
-                            />
-                        </ButtonWithTooltip>
+                            {showFlowModePulse && (
+                                <>
+                                    {/* 炫彩渐变光晕背景，利用模糊产生高级外发光 */}
+                                    <div className="absolute -inset-1.5 rounded-lg bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 opacity-75 blur-md animate-pulse pointer-events-none z-0" />
+                                    {/* 动态扩散的波纹边缘 */}
+                                    <div className="absolute -inset-1.5 rounded-lg border border-indigo-500/80 animate-ping opacity-30 pointer-events-none z-0" />
+                                </>
+                            )}
+                            <div className="relative z-10">
+                                <ButtonWithTooltip
+                                    tooltipContent={
+                                        flowMode === "swimlane"
+                                            ? "当前: 泳道图模式 (点击切回自由模式)"
+                                            : "当前: 自由模式 (点击切到泳道图模式)"
+                                    }
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={handleToggleFlowMode}
+                                    disabled={
+                                        status === "streaming" ||
+                                        status === "submitted"
+                                    }
+                                    className={`hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed ${
+                                        flowMode === "swimlane"
+                                            ? "bg-accent text-primary"
+                                            : ""
+                                    }`}
+                                    data-testid="flow-mode-toggle"
+                                >
+                                    <Workflow
+                                        className={`${isMobile ? "h-4 w-4" : "h-5 w-5"} ${
+                                            flowMode === "swimlane"
+                                                ? "text-primary"
+                                                : "text-muted-foreground"
+                                        }`}
+                                    />
+                                </ButtonWithTooltip>
+                            </div>
+                        </div>
 
                         {/* IR 编辑按钮: 仅 swimlane 模式 + 已有 IR 时显示 */}
                         {flowMode === "swimlane" && currentIr && (
