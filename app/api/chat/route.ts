@@ -609,9 +609,13 @@ ${userPrompt}
         throw new Error("无法获取视觉大模型的响应流")
     }
 
+    // 把 VL 流的 text-* 事件改写成 reasoning-*，让前端把视觉分析内容渲染为"思考气泡"
+    // 而不是污染主模型正文
+    const visionReasoningBody = remapVisionTextToReasoning(visionBody)
+
     const accumulatedTextPromise = visionResultStream.text
 
-    const combinedStream = concatStreams(visionBody, async () => {
+    const combinedStream = concatStreams(visionReasoningBody, async () => {
         let parsedText = ""
         try {
             parsedText = await accumulatedTextPromise
@@ -795,6 +799,82 @@ function concatStreams(
             if (reader) {
                 reader.cancel()
             }
+        },
+    })
+}
+
+/**
+ * 把 UIMessage Stream 中的 text-* 事件改写成 reasoning-* 事件。
+ * 用途：VL 视觉模型本身是辅助"思考"步骤，它的结构化文本不应该污染主模型正文。
+ * 通过改写事件类型，让前端把这段内容渲染为可折叠的思考气泡。
+ * 同时给 id 加上 "vision-" 前缀，避免与主模型的 text/reasoning id 冲突。
+ */
+function remapVisionTextToReasoning(
+    input: ReadableStream<Uint8Array>,
+): ReadableStream<Uint8Array> {
+    const decoder = new TextDecoder()
+    const encoder = new TextEncoder()
+    let buffer = ""
+
+    const rewriteLine = (line: string): string => {
+        // SSE 行格式: "data: {...}\n"。非 data 行（注释、空行、心跳）原样透传
+        if (!line.startsWith("data:")) return line
+        const payload = line.slice(5).trim()
+        if (!payload || payload === "[DONE]") return line
+        try {
+            const evt = JSON.parse(payload)
+            if (!evt || typeof evt !== "object") return line
+            const type = (evt as { type?: unknown }).type
+            if (type === "text-start") {
+                ;(evt as any).type = "reasoning-start"
+            } else if (type === "text-delta") {
+                ;(evt as any).type = "reasoning-delta"
+            } else if (type === "text-end") {
+                ;(evt as any).type = "reasoning-end"
+            } else {
+                return line
+            }
+            if (typeof (evt as any).id === "string") {
+                ;(evt as any).id = `vision-${(evt as any).id}`
+            }
+            // 保留原有换行风格：把改写后的 JSON 重新拼回 "data: ...\n"
+            const newline = line.endsWith("\n") ? "\n" : ""
+            return `data: ${JSON.stringify(evt)}${newline}`
+        } catch {
+            return line
+        }
+    }
+
+    return new ReadableStream<Uint8Array>({
+        async start(controller) {
+            const reader = input.getReader()
+            try {
+                while (true) {
+                    const { done, value } = await reader.read()
+                    if (done) {
+                        if (buffer.length > 0) {
+                            controller.enqueue(
+                                encoder.encode(rewriteLine(buffer)),
+                            )
+                            buffer = ""
+                        }
+                        controller.close()
+                        return
+                    }
+                    buffer += decoder.decode(value, { stream: true })
+                    let nlIndex: number
+                    while ((nlIndex = buffer.indexOf("\n")) !== -1) {
+                        const line = buffer.slice(0, nlIndex + 1)
+                        buffer = buffer.slice(nlIndex + 1)
+                        controller.enqueue(encoder.encode(rewriteLine(line)))
+                    }
+                }
+            } catch (err) {
+                controller.error(err)
+            }
+        },
+        cancel() {
+            input.cancel().catch(() => {})
         },
     })
 }
