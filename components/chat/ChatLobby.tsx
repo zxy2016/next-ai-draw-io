@@ -36,6 +36,7 @@ interface ChatLobbyProps {
     sessions: SessionMetadata[]
     onSelectSession: (id: string) => void
     onDeleteSession?: (id: string) => void
+    onDeleteAllSessions?: () => void
     setInput: (input: string) => void
     setFiles: (files: File[]) => void
     onSendTemplate?: (template: Template) => void
@@ -48,6 +49,9 @@ interface ChatLobbyProps {
             justNow?: string
             deleteTitle?: string
             deleteDescription?: string
+            deleteAllTitle?: string
+            deleteAllDescription?: string
+            clearAll?: string
         }
         templates?: {
             title?: string
@@ -59,6 +63,7 @@ interface ChatLobbyProps {
         common: {
             delete: string
             cancel: string
+            confirm?: string
         }
     }
 }
@@ -101,6 +106,7 @@ export function ChatLobby({
     sessions,
     onSelectSession,
     onDeleteSession,
+    onDeleteAllSessions,
     setInput,
     setFiles,
     onSendTemplate,
@@ -111,6 +117,7 @@ export function ChatLobby({
     const [examplesExpanded, setExamplesExpanded] = useState(true)
     const [panelVisibility, setPanelVisibility] = useState(getPanelVisibility)
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+    const [deleteAllDialogOpen, setDeleteAllDialogOpen] = useState(false)
     const [sessionToDelete, setSessionToDelete] = useState<string | null>(null)
     const [searchQuery, setSearchQuery] = useState("")
 
@@ -152,9 +159,27 @@ export function ChatLobby({
             {/* Recent Chats Section */}
             {panelVisibility.recentChats && (
                 <div className="mb-6">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1 mb-3">
-                        {dict.sessionHistory?.recentChats || "Recent Chats"}
-                    </p>
+                    <div className="flex items-center justify-between px-1 mb-3">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                            {dict.sessionHistory?.recentChats || "Recent Chats"}
+                        </p>
+                        {sessions.length > 0 && onDeleteAllSessions && (
+                            <button
+                                type="button"
+                                onClick={() => setDeleteAllDialogOpen(true)}
+                                className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors cursor-pointer"
+                                title={
+                                    dict.sessionHistory?.clearAll || "Clear All"
+                                }
+                            >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>
+                                    {dict.sessionHistory?.clearAll ||
+                                        "Clear All"}
+                                </span>
+                            </button>
+                        )}
+                    </div>
                     {/* Search Bar */}
                     <div className="relative mb-3">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -345,6 +370,41 @@ export function ChatLobby({
                                 }
                                 setDeleteDialogOpen(false)
                                 setSessionToDelete(null)
+                            }}
+                            className="border border-red-300 bg-red-50 text-red-700 hover:bg-red-100 hover:border-red-400"
+                        >
+                            {dict.common.delete}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Delete All Confirmation Dialog */}
+            <AlertDialog
+                open={deleteAllDialogOpen}
+                onOpenChange={setDeleteAllDialogOpen}
+            >
+                <AlertDialogContent className="max-w-sm">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            {dict.sessionHistory?.deleteAllTitle ||
+                                "Delete all history chats?"}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {dict.sessionHistory?.deleteAllDescription ||
+                                "This will permanently delete all other chat sessions and their diagrams. This action cannot be undone."}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>
+                            {dict.common.cancel}
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                if (onDeleteAllSessions) {
+                                    onDeleteAllSessions()
+                                }
+                                setDeleteAllDialogOpen(false)
                             }}
                             className="border border-red-300 bg-red-50 text-red-700 hover:bg-red-100 hover:border-red-400"
                         >

@@ -159,6 +159,7 @@ interface ChatMessageDisplayProps {
     sessions?: SessionMetadata[]
     onSelectSession?: (id: string) => void
     onDeleteSession?: (id: string) => void
+    onDeleteAllSessions?: () => void
     loadedMessageIdsRef?: MutableRefObject<Set<string>>
     validationStates?: Record<string, ValidationState>
     onImproveWithSuggestions?: (feedback: string) => void
@@ -189,6 +190,7 @@ export function ChatMessageDisplay({
     sessions = [],
     onSelectSession,
     onDeleteSession,
+    onDeleteAllSessions,
     loadedMessageIdsRef,
     validationStates = {},
     onImproveWithSuggestions,
@@ -718,6 +720,7 @@ export function ChatMessageDisplay({
                     sessions={sessions}
                     onSelectSession={onSelectSession || (() => {})}
                     onDeleteSession={onDeleteSession}
+                    onDeleteAllSessions={onDeleteAllSessions}
                     setInput={setInput}
                     setFiles={setFiles}
                     onSendTemplate={onSendTemplate}

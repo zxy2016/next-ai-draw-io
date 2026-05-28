@@ -276,7 +276,10 @@
         "recentChats": "Recent Chats",
         "justNow": "Just now",
         "searchPlaceholder": "Search chats...",
-        "noResults": "No chats found"
+        "noResults": "No chats found",
+        "deleteAllTitle": "Delete other chats?",
+        "deleteAllDescription": "This will permanently delete all other chat sessions and their diagrams. This action cannot be undone.",
+        "clearAll": "Clear All"
     },
     "templates": {
         "title": "My Templates",

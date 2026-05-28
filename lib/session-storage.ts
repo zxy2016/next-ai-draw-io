@@ -188,6 +188,31 @@ export async function deleteSession(id: string): Promise<void> {
     }
 }
 
+export async function deleteAllSessions(
+    exceptId?: string | null,
+): Promise<void> {
+    if (!isIndexedDBAvailable()) return
+    try {
+        const db = await getDB()
+        if (exceptId) {
+            const tx = db.transaction(STORE_NAME, "readwrite")
+            const store = tx.store
+            let cursor = await store.openCursor()
+            while (cursor) {
+                if (cursor.key !== exceptId) {
+                    await cursor.delete()
+                }
+                cursor = await cursor.continue()
+            }
+            await tx.done
+        } else {
+            await db.clear(STORE_NAME)
+        }
+    } catch (error) {
+        console.error("Failed to delete all sessions:", error)
+    }
+}
+
 export async function getSessionCount(): Promise<number> {
     if (!isIndexedDBAvailable()) return 0
     try {

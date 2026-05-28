@@ -276,7 +276,10 @@
         "recentChats": "最近のチャット",
         "justNow": "たった今",
         "searchPlaceholder": "チャットを検索...",
-        "noResults": "チャットが見つかりません"
+        "noResults": "チャットが見つかりません",
+        "deleteAllTitle": "他のチャット履歴を削除しますか？",
+        "deleteAllDescription": "現在のチャットを除く、すべてのチャットセッションとその図面が完全に削除されます。この操作は取り消せません。",
+        "clearAll": "すべてクリア"
     },
     "validation": {
         "title": "ダイアグラムを検証",

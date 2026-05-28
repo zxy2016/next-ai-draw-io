@@ -1007,6 +1007,12 @@ export default function ChatPanel({
         [sessionManager, syncUIWithSession, router, pathname],
     )
 
+    // Handle clearing all session history (except current active session)
+    const handleDeleteAllSessions = useCallback(async () => {
+        if (!sessionManager.isAvailable) return
+        await sessionManager.deleteAllSessions()
+    }, [sessionManager])
+
     const handleNewChat = useCallback(async () => {
         // Save current session before creating new one
         if (sessionManager.isAvailable && messages.length > 0) {
@@ -1648,6 +1654,7 @@ ${JSON.stringify(parsed.data, null, 2)}
                     sessions={sessionManager.sessions}
                     onSelectSession={handleSelectSession}
                     onDeleteSession={handleDeleteSession}
+                    onDeleteAllSessions={handleDeleteAllSessions}
                     loadedMessageIdsRef={loadedMessageIdsRef}
                     validationStates={validationStates}
                     onImproveWithSuggestions={handleImproveWithSuggestions}

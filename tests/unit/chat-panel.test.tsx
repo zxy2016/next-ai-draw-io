@@ -63,8 +63,12 @@ vi.mock("@/components/settings-dialog", () => ({
 vi.mock("@/components/swimlane/IREditorDrawer", () => ({
     IREditorDrawer: () => null,
 }))
+const mockChatMessageDisplay = vi.fn()
 vi.mock("@/components/chat-message-display", () => ({
-    ChatMessageDisplay: () => null,
+    ChatMessageDisplay: (props: any) => {
+        mockChatMessageDisplay(props)
+        return <div data-testid="chat-message-display" />
+    },
 }))
 vi.mock("@/components/dev-xml-simulator", () => ({
     DevXmlSimulator: () => null,
@@ -115,6 +119,7 @@ vi.mock("@/hooks/use-session-manager", () => ({
         currentSession: null,
         setCurrentSession: vi.fn(),
         sessions: [],
+        deleteAllSessions: vi.fn(),
     }),
 }))
 
@@ -239,5 +244,35 @@ describe("ChatPanel first-load access code check", () => {
         // Verify settings dialog is not open
         await new Promise((resolve) => setTimeout(resolve, 50))
         expect(screen.queryByTestId("settings-dialog")).toBeNull()
+    })
+
+    it("should pass onDeleteAllSessions prop to ChatMessageDisplay", () => {
+        // Mock fetch to prevent config check failure on render
+        const mockFetch = vi.fn().mockImplementation(() =>
+            Promise.resolve({
+                ok: true,
+                json: () => Promise.resolve({ accessCodeRequired: false }),
+            }),
+        )
+        globalThis.fetch = mockFetch as any
+
+        render(
+            <ChatPanel
+                isVisible={true}
+                onToggleVisibility={vi.fn()}
+                drawioUi="min"
+                onDrawioUiChange={vi.fn()}
+                darkMode={false}
+                onToggleDarkMode={vi.fn()}
+            />,
+        )
+
+        expect(mockChatMessageDisplay).toHaveBeenCalled()
+        const lastCallProps =
+            mockChatMessageDisplay.mock.calls[
+                mockChatMessageDisplay.mock.calls.length - 1
+            ][0]
+        expect(lastCallProps.onDeleteAllSessions).toBeDefined()
+        expect(typeof lastCallProps.onDeleteAllSessions).toBe("function")
     })
 })

@@ -276,7 +276,10 @@
         "recentChats": "最近對話",
         "justNow": "剛剛",
         "searchPlaceholder": "搜尋對話...",
-        "noResults": "未找到對話"
+        "noResults": "未找到對話",
+        "deleteAllTitle": "刪除其他歷史對話？",
+        "deleteAllDescription": "這將永久刪除除目前對話之外的所有聊天對話及其圖表。此操作無法復原。",
+        "clearAll": "清空全部歷史"
     },
     "templates": {
         "title": "我的範本",

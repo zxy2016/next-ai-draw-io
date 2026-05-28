@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import {
     type ChatSession,
     createEmptySession,
+    deleteAllSessions as deleteAllSessionsFromDB,
     deleteSession as deleteSessionFromDB,
     enforceSessionLimit,
     extractTitle,
@@ -35,6 +36,7 @@ export interface UseSessionManagerReturn {
     // Actions
     switchSession: (id: string) => Promise<SessionData | null>
     deleteSession: (id: string) => Promise<{ wasCurrentSession: boolean }>
+    deleteAllSessions: () => Promise<void>
     // forSessionId: optional session ID to verify save targets correct session (prevents stale debounce writes)
     saveCurrentSession: (
         data: SessionData,
@@ -223,6 +225,12 @@ export function useSessionManager(
         [currentSessionId, refreshSessions],
     )
 
+    // Delete all sessions except current active session
+    const deleteAllSessions = useCallback(async (): Promise<void> => {
+        await deleteAllSessionsFromDB(currentSessionId)
+        await refreshSessions()
+    }, [currentSessionId, refreshSessions])
+
     // Save current session data (debounced externally by caller)
     // forSessionId: if provided, verify save targets correct session (prevents stale debounce writes)
     const saveCurrentSession = useCallback(
@@ -315,6 +323,7 @@ export function useSessionManager(
         isAvailable,
         switchSession,
         deleteSession,
+        deleteAllSessions,
         saveCurrentSession,
         refreshSessions,
         clearCurrentSession,
