@@ -24,7 +24,7 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # draw.io 服务地址（必填，替换为公司内网部署的 draw.io 地址）
-ARG NEXT_PUBLIC_DRAWIO_BASE_URL=https://embed.diagrams.net
+ARG NEXT_PUBLIC_DRAWIO_BASE_URL=http://10.250.7.49:39033
 ENV NEXT_PUBLIC_DRAWIO_BASE_URL=${NEXT_PUBLIC_DRAWIO_BASE_URL}
 
 # 子目录部署路径（如需部署在子路径下，如 /hdraw，否则留空）
