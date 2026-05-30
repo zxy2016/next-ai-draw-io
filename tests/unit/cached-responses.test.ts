@@ -7,7 +7,7 @@ import {
 describe("findCachedResponse", () => {
     it("returns cached response for exact match without image", () => {
         const result = findCachedResponse(
-            "Give me a **animated connector** diagram of transformer's architecture",
+            "用带动画连接器的图表展示 Transformer 架构",
             false,
         )
         expect(result).toBeDefined()
@@ -15,7 +15,7 @@ describe("findCachedResponse", () => {
     })
 
     it("returns cached response for exact match with image", () => {
-        const result = findCachedResponse("Replicate this in aws style", true)
+        const result = findCachedResponse("用 AWS 风格复制这个架构图", true)
         expect(result).toBeDefined()
         expect(result?.xml).toContain("AWS")
     })
@@ -30,7 +30,7 @@ describe("findCachedResponse", () => {
 
     it("returns undefined when hasImage doesn't match", () => {
         // This prompt exists but requires hasImage=true
-        const result = findCachedResponse("Replicate this in aws style", false)
+        const result = findCachedResponse("用 AWS 风格复制这个架构图", false)
         expect(result).toBeUndefined()
     })
 
@@ -40,7 +40,7 @@ describe("findCachedResponse", () => {
     })
 
     it("returns response for Draw a cat prompt", () => {
-        const result = findCachedResponse("Draw a cat for me", false)
+        const result = findCachedResponse("帮我画一只猫", false)
         expect(result).toBeDefined()
         expect(result?.xml).toContain("ellipse")
     })
