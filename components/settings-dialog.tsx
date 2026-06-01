@@ -1,6 +1,13 @@
 "use client"
 
-import { ChevronRight, Info, MessageSquare, Moon, Sun } from "lucide-react"
+import {
+    BookOpen,
+    ChevronRight,
+    Info,
+    MessageSquare,
+    Moon,
+    Sun,
+} from "lucide-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { Suspense, useCallback, useEffect, useState } from "react"
 import { toast } from "sonner"
@@ -688,6 +695,16 @@ function SettingsContent({
                     >
                         <MessageSquare className="h-3 w-3" />
                         {dict.nav.feedback}
+                    </a>
+                    <span className="text-muted-foreground">·</span>
+                    <a
+                        href="https://ihaier.feishu.cn/base/A5YAbK9hra3gOTspK05citszn8e?table=ldxTD6KRQXjNLYPn"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                    >
+                        <BookOpen className="h-3 w-3" />
+                        {dict.nav.userGuide}
                     </a>
                     {process.env.NEXT_PUBLIC_SHOW_ABOUT_AND_NOTICE ===
                         "true" && (
