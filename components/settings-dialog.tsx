@@ -706,6 +706,11 @@ function SettingsContent({
                         <BookOpen className="h-3 w-3" />
                         {dict.nav.userGuide}
                     </a>
+                    <span className="text-muted-foreground">·</span>
+                    {/* 作者署名 —— 低调留名，接在使用指南之后 */}
+                    <span className="text-xs text-muted-foreground/70">
+                        联系张小禹（20116459）
+                    </span>
                     {process.env.NEXT_PUBLIC_SHOW_ABOUT_AND_NOTICE ===
                         "true" && (
                         <>
