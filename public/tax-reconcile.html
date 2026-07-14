@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html><head><style id="qw-theme">:root {
+  --color-bg: #faf9fc;
+  --color-text: #131920;
+  --color-navbar-bg: #f9f9fb;
+  --color-bg-chat-view: #fcfcfd;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #f9fafb;
+  --color-bg-hover: #f3f4f6;
+  --color-surface: #f9fafb;
+  --color-surface-hover: #f3f4f6;
+  --color-surface-active: #e5e7eb;
+  --color-border: rgba(0, 0, 0, .12);
+  --color-border-light: rgba(0, 0, 0, .06);
+  --color-border-strong: #d1d5db;
+  --color-primary: #4200db;
+  --color-primary-dark: #35009e;
+  --color-primary-light: #8575ff;
+  --color-primary-bg: #e8e6ff;
+  --color-primary-hover-border: #35009e;
+  --color-nav-icon-active: #4200db;
+  --color-nav-hover-border: #4200db;
+  --color-primary-alpha-3: color-mix(in srgb, #4200db 3%, transparent);
+  --color-primary-alpha-5: color-mix(in srgb, #4200db 5%, transparent);
+  --color-primary-alpha-8: color-mix(in srgb, #4200db 8%, transparent);
+  --color-primary-alpha-12: color-mix(in srgb, #4200db 12%, transparent);
+  --color-primary-alpha-15: color-mix(in srgb, #4200db 15%, transparent);
+  --color-primary-alpha-20: color-mix(in srgb, #4200db 20%, transparent);
+  --color-primary-alpha-25: color-mix(in srgb, #4200db 25%, transparent);
+  --color-primary-alpha-30: color-mix(in srgb, #4200db 30%, transparent);
+  --color-primary-alpha-40: color-mix(in srgb, #4200db 40%, transparent);
+  --color-primary-alpha-50: color-mix(in srgb, #4200db 50%, transparent);
+  --color-primary-alpha-60: color-mix(in srgb, #4200db 60%, transparent);
+  --color-primary-subtle: color-mix(in srgb, #4200db 12%, transparent);
+  --color-primary-border: color-mix(in srgb, #4200db 30%, transparent);
+  --color-focus-ring: color-mix(in srgb, #4200db 50%, transparent);
+  --color-sidebar-hover: color-mix(in srgb, #4200db 12%, transparent);
+  --color-accent: #4200db;
+  --color-accent-foreground: #4200db;
+  --color-accent-dark: #35009e;
+  --color-accent-light: #e8e6ff;
+  --color-accent-inverse: #ffffff;
+  --color-link: #4200db;
+  --color-primary-gradient-end: #e8e6ff;
+  --color-primary-bg-solid: #e8e6ff;
+  --color-user-bubble: #F3F3F7;
+  --color-user-bubble-text: #131920;
+  --color-text-secondary: #5e5e5e;
+  --color-text-tertiary: #656871;
+  --color-text-muted: #9ca3af;
+  --color-text-on-primary: #ffffff;
+  --color-success: #00802f;
+  --color-success-dark: #00471e;
+  --color-success-light: #d9ffd6;
+  --color-success-hover: #005c26;
+  --color-success-bg: #e6f5eb;
+  --color-success-border: #b3d9bf;
+  --color-success-foreground: #00802f;
+  --color-success-dark-foreground: #00471e;
+  --color-success-text: #00471e;
+  --color-error: #db0000;
+  --color-error-dark: #700000;
+  --color-error-light: #ffe0e0;
+  --color-error-hover: #ffe0e0;
+  --color-error-bg: #fceaea;
+  --color-error-border: #f2cccc;
+  --color-error-active-border: #db0000;
+  --color-error-foreground: #db0000;
+  --color-error-dark-foreground: #700000;
+  --color-error-inverse: #ffffff;
+  --color-error-text: #700000;
+  --color-warning: #f2b100;
+  --color-warning-dark: #573a00;
+  --color-warning-light: #fffbbd;
+  --color-warning-hover: #db9200;
+  --color-warning-bg: #fef7e6;
+  --color-warning-border: #f9dfa3;
+  --color-warning-foreground: #f2b100;
+  --color-warning-dark-foreground: #573a00;
+  --color-warning-inverse: #573a00;
+  --color-surface-warning: #fffbbd;
+  --color-text-warning: #573a00;
+  --color-info: #006ce0;
+  --color-info-dark: #002a66;
+  --color-info-light: #d1f1ff;
+  --color-info-hover: #003b8f;
+  --color-info-bg: #ebf3fc;
+  --color-info-border: #b3d1f0;
+  --color-info-foreground: #006ce0;
+  --color-info-dark-foreground: #002a66;
+  --color-info-inverse: #ffffff;
+  --color-overlay: rgba(0, 0, 0, .5);
+  --color-shadow: rgba(0, 0, 0, .08);
+  --color-hover: rgba(0, 0, 0, .05);
+  --color-tooltip-bg: rgba(0, 0, 0, .85);
+  --color-tooltip-text: #ffffff;
+  --color-voice-purple: #8575ff;
+  --color-voice-purple-dark: #4200db;
+  --color-voice-purple-light: #8575ff;
+  --color-voice-red: #db0000;
+  --color-voice-red-dark: #700000;
+  --color-voice-amber: #f2b100;
+  --color-voice-purple-glow: rgba(66, 0, 219, .4);
+  --color-voice-red-glow: rgba(219, 0, 0, .4);
+  --font-sans: "Amazon Ember", "Helvetica Neue", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", "Monaco", "Menlo", "Consolas", monospace;
+  --text-2xs: .5625rem;
+  --text-xs: .625rem;
+  --text-sm: .6875rem;
+  --text-base: .75rem;
+  --text-md: .8125rem;
+  --text-lg: .875rem;
+  --text-xl: 1rem;
+  --text-2xl: 1.125rem;
+  --text-3xl: 1.25rem;
+  --text-4xl: 1.5rem;
+  --text-5xl: 2rem;
+  --spacing-1: calc(.25rem * 1);
+  --spacing-1-5: calc(.25rem * 1.5);
+  --spacing-2: calc(.25rem * 2);
+  --spacing-3: calc(.25rem * 3);
+  --spacing-4: calc(.25rem * 4);
+  --spacing-5: calc(.25rem * 5);
+  --spacing-6: calc(.25rem * 6);
+  --spacing-7: calc(.25rem * 7);
+  --spacing-8: calc(.25rem * 8);
+  --spacing-9: calc(.25rem * 9);
+  --spacing-10: calc(.25rem * 10);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-card: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 8px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, .08);
+  --color-success-bg-solid: #d9ffd6;
+  --color-error-bg-solid: #ffe0e0;
+  --color-error-border-solid: #ffe0e0;
+  --color-warning-bg-solid: #fffbbd;
+  --color-warning-text: #573a00;
+  --color-info-bg-solid: #d1f1ff;
+  --color-info-bg-solid-alt: #d1f1ff;
+  --color-info-text: #002a66;
+  --color-info-text-alt: #002a66;
+  --color-emerald: #10b981;
+  --color-teal: #4ecdc4;
+  --color-code-bg: #F3F3F7;
+  --color-code-header-bg: #f1f3f5;
+  --color-code-text: #24292e;
+  --color-code-border: #e1e4e8;
+  --color-code-muted: #6a737d;
+  --color-inline-code-bg: #F3F3F7;
+  --color-inline-code-text: #24292e;
+  --color-inline-code-border: #e1e4e8;
+  --color-scrollbar-thumb: #d1d5db;
+  --color-scrollbar-track: transparent;
+  --color-graph-node-text: #333333;
+  --color-graph-node-text-dim: #7F8C8D;
+  --color-graph-edge-default: #95A5A6;
+  --color-graph-edge-cross: #E67E22;
+  --color-graph-edge-text: #666666;
+  --color-graph-edge-stroke: #ffffff;
+  --color-graph-highlight-bg: #FF6B6B;
+  --color-graph-highlight-border: #E74C3C;
+  --color-graph-search-bg: #FFD700;
+  --color-graph-search-border: #FFA500;
+  --color-graph-focus-border: #C0392B;
+  --color-graph-external-border: #95A5A6;
+  --color-graph-cat-file: #3498DB;
+  --color-graph-cat-folder: #7F8C8D;
+  --color-graph-cat-file-aggregate: #2980B9;
+  --color-graph-cat-class: #9B59B6;
+  --color-graph-cat-function: #2ECC71;
+  --color-graph-cat-method: #1ABC9C;
+  --color-graph-cat-variable: #F39C12;
+  --color-graph-cat-import: #D35400;
+  --color-graph-cat-module: #5B6ABF;
+  --color-graph-cat-concept: #E74C3C;
+  --color-graph-cat-person: #FF6B6B;
+  --color-graph-cat-org: #4ECDC4;
+  --color-graph-cat-organization: #4ECDC4;
+  --color-graph-cat-product: #A29BFE;
+  --color-graph-cat-metric: #FD79A8;
+  --color-graph-cat-location: #34495E;
+  --color-graph-cat-date: #E056A0;
+  --color-graph-cat-code: #3498DB;
+  --color-graph-cat-doc: #7F8C8D;
+  --color-graph-cat-url: #00B894;
+  --color-graph-cat-email: #6C5CE7;
+  --color-graph-cat-unknown: #BDC3C7;
+  --color-graph-rel-contains: #BDC3C7;
+  --color-graph-rel-extends: #9B59B6;
+  --color-graph-rel-implements: #3498DB;
+  --color-graph-rel-imports: #E67E22;
+  --color-graph-rel-uses: #2ECC71;
+  --color-graph-rel-calls: #27AE60;
+  --color-graph-rel-references: #F39C12;
+  --color-graph-rel-related-to: #95A5A6;
+  --color-graph-rel-works-on: #E74C3C;
+  --color-graph-rel-owns: #1ABC9C;
+  --color-graph-rel-depends-on: #E67E22;
+  --color-graph-rel-parent-of: #BDC3C7;
+  --qs-content: #fff;
+  --qs-main: #fff;
+  --qs-primary-foreground: #131920;
+  --qs-secondary-foreground: #656871;
+  --qs-tertiary-foreground: #9ca3af;
+  --qs-placeholder-foreground: #8c8c94;
+  --qs-divider: #dedee3;
+  --qs-default-border: #8c8c94;
+  --qs-neutral-soft: #b4b4bb;
+  --qs-neutral-gray-50: #f9fafb;
+  --qs-tertiary-background: #f9fafb;
+  --qs-action-hover: #f3f3f7;
+  --qs-primary-default: #4200db;
+  --qs-primary-dark: #35009e;
+  --qs-primary-light: #e8e6ff;
+  --qs-success-default: #00802f;
+  --qs-error-default: #db0000;
+  --qs-font-sans: "Amazon Ember", "Helvetica Neue", "Segoe UI", Helvetica, Arial, sans-serif;
+  --qs-font-family: "Amazon Ember", "Helvetica Neue", "Segoe UI", Helvetica, Arial, sans-serif;
+  --qs-font-base-letter-spacing: .15px;
+  --qs-shadow-sm: 0 0 2px 0 #00000029, 0 0 4px 0 #00000029;
+  --qs-shadow-md: 0 0 2px 0 #00000029, 0 2px 8px 1px #00000029;
+  --qs-shadow-lg: 0 4px 16px 4px #00000029, 0 2px 6px 1px #00000029;
+  --qs-shadow-xl: 0 4px 8px 2px #00000029, 0 6px 20px 4px #00000029;
+  --qs-width-modal-sm: 384px;
+  --qs-width-modal-md: 600px;
+  --qs-width-modal-lg: 1136px;
+  --qs-grid-gap: 16px;
+  --qs-grid-gap-xl: 24px;
+  --qs-primary-medium: #8575ff;
+  --qs-primary-inverse: #fff;
+  --qs-neutral-lightest: #f9f9fb;
+  --qs-neutral-light: #f3f3f7;
+  --qs-neutral-default: #dedee3;
+  --qs-neutral-medium: #8c8c94;
+  --qs-neutral-deep: #656871;
+  --qs-neutral-dark: #333843;
+  --qs-neutral-strong: #131920;
+  --qs-neutral-white: #fff;
+  --qs-neutral-black: #000;
+  --qs-success-medium: #005c26;
+  --qs-success-dark: #00471e;
+  --qs-success-light: #d9ffd6;
+  --qs-success-inverse: #fff;
+  --qs-info-default: #006ce0;
+  --qs-info-medium: #003b8f;
+  --qs-info-dark: #002a66;
+  --qs-info-light: #d1f1ff;
+  --qs-info-inverse: #fff;
+  --qs-warning-default: #f2b100;
+  --qs-warning-medium: #db9200;
+  --qs-warning-dark: #573a00;
+  --qs-warning-light: #fffbbd;
+  --qs-warning-inverse: #573a00;
+  --qs-warning-experimental: #f2b100;
+  --qs-warning-experimental-light: #fffbbd;
+  --qs-warning-experimental-light-foreground: #fffbbd;
+  --qs-error-medium: #900;
+  --qs-error-dark: #700000;
+  --qs-error-light: #ffe0e0;
+  --qs-error-inverse: #fff;
+  --qs-connection-default: #db3300;
+  --qs-connection-soft: #ff997a;
+  --qs-connection-light: #ffe0d6;
+  --qs-connection-dark: #661800;
+  --qs-automation-default: #b3008f;
+  --qs-automation-medium: #d600ba;
+  --qs-automation-soft: #ff94f1;
+  --qs-automation-light: #ffe0fb;
+  --qs-automation-dark: #660052;
+  --qs-insight-default: #a000b8;
+  --qs-insight-soft: #f299ff;
+  --qs-insight-light: #fce6ff;
+  --qs-insight-dark: #590066;
+  --qs-visualization-default: #7300e5;
+  --qs-visualization-soft: #d4a8ff;
+  --qs-visualization-light: #f2e5ff;
+  --qs-visualization-dark: #45008a;
+  --qs-spice: #ff9800;
+  --qs-coachmark: #006ce0;
+  --qs-brand: #fff;
+  --qs-brand-foreground: #131920;
+  --qs-brand-navbar: #131920;
+  --qs-brand-navbar-foreground: #fff;
+  --qs-brand-navbar-light: #dedee3;
+  --qs-brand-navbar-dark: #000;
+  --qs-application-navbar: #4200db;
+  --qs-application-navbar-foreground: #fff;
+  --qs-application-navbar-light: #e8e6ff;
+  --qs-application-navbar-dark: #35009e;
+  --qs-dimension: #4200db;
+  --qs-dimension-foreground: #fff;
+  --qs-dimension-experimental: #4200db;
+  --qs-dimension-experimental-foreground: #4200db;
+  --qs-measure: #00802f;
+  --qs-measure-foreground: #fff;
+  --qs-measure-experimental: #f2b100;
+  --qs-measure-experimental-foreground: #f2b100;
+  --qs-content-inverse: #333843;
+  --qs-content-inverse-active: #131920;
+  --qs-secondary: #dedee3;
+  --qs-disabled: #8c8c94;
+  --qs-divider-light: #f3f3f7;
+  --qs-hover-border: #333843;
+  --qs-active-border: #4200db;
+  --qs-disabled-border: #dedee3;
+  --qs-error-border: #ffe0e0;
+  --qs-error-active-border: #db0000;
+  --qs-disabled-foreground: #b4b4bb;
+  --qs-primary-inverse-foreground: #fff;
+  --qs-error-foreground: #db0000;
+  --qs-contrast-foreground: #131920;
+  --qs-main-foreground: #131920;
+  --qs-main-secondary-foreground: #656871;
+  --qs-action-disabled: #f3f3f7;
+  --qs-action-active: #e8e6ff;
+  --qs-default-badge: #dedee3;
+  --qs-tag-default: #dedee3;
+  --qs-tag-soft-border: #b4b4bb;
+  --qs-focus-offset: 1px;
+  --qs-toggle-tile-sm: calc(.25rem * 8);
+  --qs-toggle-tile-md: calc(.25rem * 12);
+  --qs-toggle-tile-lg: calc(.25rem * 15);
+  --qs-shadow-pin-right: inset 4px 0 4px -4px #00000029;
+  --qs-shadow-pin-left: inset -4px 0 4px -4px #00000029;
+  --react-pdf-text-layer: 1;
+  --highlight-bg-color: rgba(180, 0, 170, 1);
+  --highlight-selected-bg-color: rgba(0, 100, 0, 1);
+  --react-pdf-annotation-layer: 1;
+  --annotation-unfocused-field-background: url("data:image/svg+xml;charset=UTF-8,<svg width='1px' height='1px' xmlns='http://www.w3.org/2000/svg'><rect width='100%' height='100%' style='fill:rgba(0, 54, 255, 0.13);'/></svg>");
+  --input-focus-border-color: Highlight;
+  --input-focus-outline: 1px solid Canvas;
+  --input-unfocused-border-color: transparent;
+  --input-disabled-border-color: transparent;
+  --input-hover-border-color: black;
+  --link-outline: none;
+  color-scheme: light;
+}
+body { background: var(--color-bg); color: var(--color-text); }
+a { color: var(--color-link, var(--color-primary)); }</style>
+<meta charset="UTF-8">
+<title>销项税金核对系统</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+  --primary: #1a3a5c;
+  --primary-light: #e8f0f8;
+  --accent: #c0392b;
+  --accent-light: #fdf2f2;
+  --success: #27ae60;
+  --success-light: #eafaf1;
+  --warning: #e67e22;
+  --warning-light: #fef9e7;
+  --bg: #f5f7fa;
+  --surface: #ffffff;
+  --text: #1a1a2e;
+  --text-sec: #555;
+  --text-muted: #888;
+  --border: #e0e4e8;
+  --radius: 12px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);padding:20px;min-height:100vh}
+.container{max-width:1200px;margin:0 auto}
+.header{text-align:center;margin-bottom:28px}
+.header h1{font-size:22px;color:var(--primary);margin-bottom:6px}
+.header p{color:var(--text-sec);font-size:13px}
+.upload-section{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.upload-box{background:var(--surface);border:2px dashed var(--border);border-radius:var(--radius);padding:28px 16px;text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.upload-box:hover{border-color:var(--primary);background:var(--primary-light)}
+.upload-box.loaded{border-color:var(--success);border-style:solid;background:var(--success-light)}
+.upload-box .icon{font-size:32px;color:var(--primary);margin-bottom:10px;display:block}
+.upload-box.loaded .icon{color:var(--success)}
+.upload-box h3{font-size:13px;color:var(--text);margin-bottom:4px}
+.upload-box p{font-size:11px;color:var(--text-muted)}
+.upload-box input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.file-name{font-size:11px;color:var(--success);margin-top:6px;font-weight:600}
+.file-info{font-size:10px;color:var(--text-muted);margin-top:2px}
+.action-bar{text-align:center;margin-bottom:24px}
+.btn{border:none;padding:12px 32px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:#142d4a;transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,58,92,.3)}
+.btn-primary:disabled{background:#aaa;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-export{background:var(--success);color:#fff;padding:8px 18px;font-size:12px;border-radius:6px}
+.btn-export:hover{background:#1e8e4e}
+.btn-outline{background:transparent;border:1.5px solid var(--primary);color:var(--primary);padding:8px 18px;font-size:12px;border-radius:6px}
+.btn-outline:hover{background:var(--primary-light)}
+.results{display:none}.results.visible{display:block;animation:fadeIn .4s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.summary-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.summary-card{background:var(--surface);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);text-align:center}
+.summary-card .label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.summary-card .value{font-size:18px;font-weight:700;font-family:'SF Mono',Consolas,monospace}
+.summary-card .value.red{color:var(--accent)}
+.summary-card .value.green{color:var(--success)}
+.summary-card .value.blue{color:var(--primary)}
+.table-section{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px}
+.table-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.table-header h2{font-size:14px;color:var(--primary);display:flex;align-items:center;gap:8px}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
+.badge-red{background:var(--accent-light);color:var(--accent)}
+.badge-yellow{background:var(--warning-light);color:var(--warning)}
+.badge-green{background:var(--success-light);color:var(--success)}
+.badge-blue{background:var(--primary-light);color:var(--primary)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:7px 10px;background:#f8f9fb;color:var(--text-muted);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid var(--border)}
+td{padding:7px 10px;border-bottom:1px solid #f0f1f3;vertical-align:top}
+tr:hover td{background:#f8f9fb}
+.amount{font-family:'SF Mono',Consolas,monospace;text-align:right;white-space:nowrap}
+.neg{color:var(--accent);font-weight:600}
+.pos{color:var(--success)}
+.status-bar{background:var(--surface);border-radius:var(--radius);padding:12px 16px;margin-bottom:20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:10px}
+.status-bar i{font-size:16px}
+.status-bar.done i{color:var(--success)}
+.status-bar .text{font-size:12px;color:var(--text-sec)}
+.loading{text-align:center;padding:40px;display:none}
+.loading.visible{display:block}
+.loading-spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.company-tag{background:var(--primary-light);color:var(--primary);padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.expand-btn{cursor:pointer;color:var(--primary);font-size:10px;transition:transform .2s;display:inline-block;width:16px}
+.expand-btn.open{transform:rotate(90deg)}
+.detail-row{display:none}
+.detail-row.visible{display:table-row}
+.detail-row td{padding:0}
+.detail-panel{background:#f8f9fb;padding:10px 14px;border-left:3px solid var(--primary);margin:4px 0}
+.detail-panel h4{font-size:11px;color:var(--primary);margin-bottom:6px;font-weight:600}
+.detail-panel table{font-size:10px;margin-bottom:8px}
+.detail-panel th{background:var(--primary);color:#fff;font-size:9px;padding:4px 6px}
+.detail-panel td{padding:3px 6px;font-size:10px}
+.match-tag{font-size:9px;padding:1px 6px;border-radius:10px;font-weight:500}
+.match-exact{background:#e8f5e9;color:#2e7d32}
+.match-extracted{background:#e3f2fd;color:#1565c0}
+.match-prefix{background:#fff3e0;color:#e65100}
+.match-none{background:#fce4ec;color:#c62828}
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.tab-nav{display:flex;gap:4px;margin-bottom:16px}
+.tab-btn{padding:8px 16px;border:none;background:transparent;color:var(--text-sec);font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.tab-btn.active{color:var(--primary);border-bottom-color:var(--primary)}
+.tab-btn:hover{color:var(--primary)}
+.tab-content{display:none}.tab-content.active{display:block}
+@media(max-width:768px){.upload-section{grid-template-columns:1fr}.summary-cards{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+  <h1><i class="fa-solid fa-magnifying-glass-dollar"></i> 销项税金核对系统</h1>
+  <p>上传税务局发票数据与账面数据，自动核对差异并定位问题单据 · 纯浏览器运行，数据不上传服务器</p>
+</div>
+
+<div class="upload-section">
+  <div class="upload-box" id="invoiceBox">
+    <i class="fa-solid fa-file-invoice icon"></i>
+    <h3>税务局发票数据</h3>
+    <p>电子税务局全量导出 / ERP开票明细 / 开票平台导出（.xlsx）</p>
+    <input type="file" id="invoiceFile" accept=".xlsx,.xls,.csv" onchange="handleFile('invoice',this)">
+    <div class="file-name" id="invoiceFileName"></div>
+    <div class="file-info" id="invoiceFileInfo"></div>
+  </div>
+  <div class="upload-box" id="ledgerBox">
+    <i class="fa-solid fa-book icon"></i>
+    <h3>账面税金数据</h3>
+    <p>应交税费-销项税 / 简易计税 明细账（.xlsx）</p>
+    <input type="file" id="ledgerFile" accept=".xlsx,.xls,.csv" onchange="handleFile('ledger',this)">
+    <div class="file-name" id="ledgerFileName"></div>
+    <div class="file-info" id="ledgerFileInfo"></div>
+  </div>
+</div>
+
+<div class="action-bar">
+  <button class="btn btn-primary" id="startBtn" disabled="" onclick="runReconciliation()">
+    <i class="fa-solid fa-play"></i> 开始核对
+  </button>
+</div>
+
+<div class="loading" id="loading"><div class="loading-spinner"></div><p style="color:var(--text-sec);font-size:13px">正在解析并核对数据...</p></div>
+
+<div class="results" id="results">
+  <div class="toolbar">
+    <div class="company-tag" id="companyTag"><i class="fa-solid fa-building"></i> 公司名称</div>
+    <div>
+      <button class="btn btn-export" onclick="exportExcel()"><i class="fa-solid fa-file-excel"></i> 导出Excel差异明细</button>
+    </div>
+  </div>
+
+  <div class="summary-cards">
+    <div class="summary-card"><div class="label">发票端税金</div><div class="value blue" id="vInv">--</div></div>
+    <div class="summary-card"><div class="label">账面端税金</div><div class="value blue" id="vLdg">--</div></div>
+    <div class="summary-card"><div class="label">总差异</div><div class="value red" id="vDiff">--</div></div>
+    <div class="summary-card"><div class="label">需处理客户</div><div class="value red" id="vCount">--</div></div>
+  </div>
+
+  <div class="status-bar done" id="statusBar">
+    <i class="fa-solid fa-circle-check"></i>
+    <span class="text" id="statusText">核对完成</span>
+  </div>
+
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('real')">实质差异</button>
+    <button class="tab-btn" onclick="switchTab('nonsales')">非销售业务</button>
+    <button class="tab-btn" onclick="switchTab('naming')">名称匹配映射</button>
+    <button class="tab-btn" onclick="switchTab('tail')">尾差</button>
+  </div>
+
+  <!-- 实质差异 -->
+  <div class="tab-content active" id="tab-real">
+    <div class="table-section">
+      <div class="table-header">
+        <h2><i class="fa-solid fa-triangle-exclamation" style="color:var(--accent)"></i> 需处理的差异客户</h2>
+        <span class="badge badge-red" id="bdReal">0项</span>
+      </div>
+      <table><thead><tr>
+        <th style="width:20px"></th><th>客户名称</th><th class="amount">发票税金</th><th class="amount">账面税金</th><th class="amount">差异</th><th>类型</th><th>问题单据</th>
+      </tr></thead><tbody id="tbReal"></tbody></table>
+    </div>
+  </div>
+
+  <!-- 非销售业务 -->
+  <div class="tab-content" id="tab-nonsales">
+    <div class="table-section">
+      <div class="table-header">
+        <h2><i class="fa-solid fa-circle-info" style="color:var(--warning)"></i> 非销售业务差异（账面有税金无发票）</h2>
+        <span class="badge badge-yellow" id="bdNon">0项</span>
+      </div>
+      <table><thead><tr><th>客户/摘要</th><th class="amount">账面税金</th><th>推测业务性质</th></tr></thead><tbody id="tbNon"></tbody></table>
+    </div>
+  </div>
+
+  <!-- 名称匹配映射 -->
+  <div class="tab-content" id="tab-naming">
+    <div class="table-section">
+      <div class="table-header">
+        <h2><i class="fa-solid fa-link" style="color:var(--primary)"></i> 智能名称匹配映射</h2>
+        <span class="badge badge-blue" id="bdName">0项</span>
+      </div>
+      <table><thead><tr><th>账面原始名称</th><th>匹配到发票客户</th><th>匹配方式</th><th>置信度</th></tr></thead><tbody id="tbName"></tbody></table>
+    </div>
+  </div>
+
+  <!-- 尾差 -->
+  <div class="tab-content" id="tab-tail">
+    <div class="table-section">
+      <div class="table-header">
+        <h2><i class="fa-solid fa-circle-check" style="color:var(--success)"></i> 尾差（可忽略）</h2>
+        <span class="badge badge-green" id="bdTail">0项</span>
+      </div>
+      <table><thead><tr><th>客户</th><th class="amount">差异金额</th></tr></thead><tbody id="tbTail"></tbody></table>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+// ====== GLOBALS ======
+let invoiceData=null,ledgerData=null,result=null;
+
+function handleFile(type,input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true});
+    if(type==='invoice'){
+      invoiceData=parseInvoice(wb);
+      document.getElementById('invoiceBox').classList.add('loaded');
+      document.getElementById('invoiceFileName').textContent='✓ '+file.name;
+      document.getElementById('invoiceFileInfo').textContent=invoiceData.rows.length+' 条记录 | 格式：'+invoiceData.meta.format;
+    } else {
+      ledgerData=parseLedger(wb);
+      document.getElementById('ledgerBox').classList.add('loaded');
+      document.getElementById('ledgerFileName').textContent='✓ '+file.name;
+      document.getElementById('ledgerFileInfo').textContent=ledgerData.rows.length+' 条记录 | 客户字段：'+ledgerData.meta.customerCol;
+    }
+    document.getElementById('startBtn').disabled=!(invoiceData&&ledgerData);
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ====== INVOICE PARSER ======
+function parseInvoice(wb){
+  let rows=[],meta={format:'未知',seller:''};
+  for(const sn of wb.SheetNames){
+    const json=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:null});
+    if(json.length<2) continue;
+    const h=json[0].map(x=>x?String(x).trim():'');
+    // Format A: 电子税务局
+    let ci=h.findIndex(x=>x.includes('购买方名称')||x.includes('购方名称'));
+    let ti=h.findIndex(x=>x==='税额'||x==='合计税额');
+    let ni=h.findIndex(x=>x.includes('数电发票号码')||x==='发票号码');
+    let si=h.findIndex(x=>x.includes('发票状态'));
+    let di=h.findIndex(x=>x.includes('开票日期'));
+    let ri=h.findIndex(x=>x==='税率');
+    let pi=h.findIndex(x=>x.includes('是否正数'));
+    let sli=h.findIndex(x=>x.includes('销方名称'));
+    if(ci>=0&&ti>=0){
+      meta.format='电子税务局导出';
+      if(sli>=0&&json[1]&&json[1][sli]) meta.seller=String(json[1][sli]).trim();
+      for(let i=1;i<json.length;i++){
+        const r=json[i]; if(!r||!r[ci]) continue;
+        const st=si>=0?String(r[si]||''):'';
+        if(st.includes('作废')) continue;
+        rows.push({customer:String(r[ci]).trim(),tax:parseFloat(r[ti])||0,invNo:ni>=0?String(r[ni]||''):'',date:di>=0?String(r[di]||'').substring(0,10):'',status:st,rate:ri>=0?String(r[ri]||''):'',type:(parseFloat(r[ti])||0)>=0?'蓝字':'红字'});
+      }
+      break;
+    }
+    // Format B: ERP
+    let ci2=h.findIndex(x=>x==='客户');
+    let ti2=h.findIndex(x=>x==='税额');
+    let rb=h.findIndex(x=>x.includes('红蓝字'));
+    if(ci2>=0&&ti2>=0){
+      meta.format='ERP开票系统('+sn+')';
+      for(let i=1;i<json.length;i++){
+        const r=json[i]; if(!r||!r[ci2]) continue;
+        const rbt=rb>=0?String(r[rb]||''):'';
+        if(rbt==='合计'||!r[ci2]) continue;
+        rows.push({customer:String(r[ci2]).trim(),tax:parseFloat(r[ti2])||0,invNo:'',date:'',status:'正常',rate:'',type:rbt||(parseFloat(r[ti2])||0)>=0?'蓝字':'红字'});
+      }
+      continue; // may have multiple sheets
+    }
+    // Format C: 开票平台
+    let ci3=h.findIndex(x=>x==='购方名称');
+    let ti3=h.findIndex(x=>x==='合计税额');
+    let ni3=h.findIndex(x=>x==='发票号码');
+    let si3=h.findIndex(x=>x.includes('发票状态'));
+    let sli3=h.findIndex(x=>x.includes('销方名称'));
+    if(ci3>=0&&ti3>=0){
+      meta.format='开票平台导出';
+      if(sli3>=0&&json[1]&&json[1][sli3]) meta.seller=String(json[1][sli3]).trim();
+      for(let i=1;i<json.length;i++){
+        const r=json[i]; if(!r||!r[ci3]) continue;
+        const st=si3>=0?String(r[si3]||''):'';
+        if(st.includes('作废')) continue;
+        rows.push({customer:String(r[ci3]).trim(),tax:parseFloat(r[ti3])||0,invNo:ni3>=0?String(r[ni3]||''):'',date:'',status:st,rate:'',type:(parseFloat(r[ti3])||0)>=0?'蓝字':'红字'});
+      }
+      break;
+    }
+  }
+  meta.format=meta.format||(rows.length?'自动识别':'未识别');
+  return {rows,meta};
+}
+
+// ====== LEDGER PARSER ======
+function parseLedger(wb){
+  let rows=[],meta={customerCol:'未识别'};
+  for(const sn of wb.SheetNames){
+    const json=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:null});
+    if(json.length<2) continue;
+    const h=json[0].map(x=>x?String(x).trim():'');
+    let ci=h.findIndex(x=>x.includes('对方科目核算维度名称'));
+    if(ci<0) ci=h.findIndex(x=>x==='摘要');
+    if(ci<0) ci=h.findIndex(x=>x.includes('客户'));
+    let cri=h.findIndex(x=>x.includes('贷方金额')||x==='贷方');
+    let vti=h.findIndex(x=>x.includes('凭证字'));
+    let vni=h.findIndex(x=>x.includes('凭证号'));
+    let dti=h.findIndex(x=>x==='日期'||x.includes('记账日期'));
+    let smi=h.findIndex(x=>x==='摘要'); if(smi===ci) smi=-1;
+    if(ci<0||cri<0) continue;
+    meta.customerCol=h[ci];
+    for(let i=1;i<json.length;i++){
+      const r=json[i]; if(!r) continue;
+      let cust=r[ci]?String(r[ci]).trim():'未知';
+      if(['本期合计','本年累计','合计','期初余额'].some(k=>cust.includes(k))) continue;
+      const credit=parseFloat(r[cri])||0;
+      if(credit===0) continue;
+      let voucher='';
+      if(vti>=0&&vni>=0&&r[vti]&&r[vni]) voucher=r[vti]+'-'+r[vni];
+      rows.push({customer:cust,credit,voucher,date:dti>=0&&r[dti]?String(r[dti]).substring(0,10):'',summary:smi>=0&&r[smi]?String(r[smi]):''});
+    }
+    break;
+  }
+  return {rows,meta};
+}
+
+// ====== NAME MATCHING ======
+function normalize(n){return n?n.replace(/\(/g,'（').replace(/\)/g,'）').trim():''}
+
+function extractCustomerName(name){
+  if(!name) return '';
+  let n=name.trim();
+  // 前缀提取
+  let m=n.match(/^向(.+?)出售.*$/); if(m) return m[1].trim();
+  m=n.match(/^冲销.*?[,，](.+)$/); if(m) return m[1].trim();
+  // 后缀剥离
+  const patterns=[
+    /[\d]{2,4}年[\d]{1,2}月.*$/,
+    /[\d]{1,2}月租赁费.*$/,
+    /[\d]{1,2}月份?借款利息.*$/,
+    /电费[（(].*[)）]$/,
+    /设备租赁.*$/,
+    /租赁.*不动产.*$/,
+    /开票$/,
+  ];
+  for(const p of patterns){
+    const cleaned=n.replace(p,'').trim();
+    if(cleaned&&cleaned.length>=2&&cleaned!==n){
+      if(cleaned.includes('公司')||cleaned.includes('有限')||cleaned.length<=4||cleaned.endsWith('药业')||cleaned.endsWith('医药'))
+        return cleaned;
+    }
+  }
+  return n;
+}
+
+function smartMatch(ledgerName, invCustomers){
+  const ln=normalize(ledgerName);
+  const invMap={}; invCustomers.forEach(c=>{invMap[normalize(c)]=c});
+  // 1. 精确
+  if(invMap[ln]) return {match:invMap[ln],method:'精确匹配',score:1.0};
+  // 2. 提取后精确
+  const ext=normalize(extractCustomerName(ledgerName));
+  if(ext&&invMap[ext]) return {match:invMap[ext],method:'提取后匹配',score:0.95};
+  // 3. 前缀匹配
+  let best=null,bestScore=0;
+  for(const[inv_n,inv_orig] of Object.entries(invMap)){
+    if(ln.startsWith(inv_n)&&inv_n.length>=4){
+      const s=inv_n.length/ln.length;
+      if(s>bestScore){best=inv_orig;bestScore=s}
+    } else if(ext&&ext.startsWith(inv_n)&&inv_n.length>=4){
+      const s=inv_n.length/ext.length*0.9;
+      if(s>bestScore){best=inv_orig;bestScore=s}
+    } else if(ext&&inv_n.startsWith(ext)&&ext.length>=4){
+      const s=ext.length/inv_n.length*0.9;
+      if(s>bestScore){best=inv_orig;bestScore=s}
+    }
+  }
+  if(best&&bestScore>=0.5) return {match:best,method:'前缀匹配',score:bestScore};
+  return {match:null,method:'无匹配',score:0};
+}
+
+// ====== RECONCILIATION ======
+function runReconciliation(){
+  document.getElementById('loading').classList.add('visible');
+  document.getElementById('results').classList.remove('visible');
+  setTimeout(()=>{
+    try{ result=doReconcile(); displayResults(result); }
+    catch(e){ alert('核对出错：'+e.message); console.error(e); }
+    document.getElementById('loading').classList.remove('visible');
+  },300);
+}
+
+function doReconcile(){
+  // Get all invoice customers
+  const invCustomerSet=new Set();
+  invoiceData.rows.forEach(r=>invCustomerSet.add(normalize(r.customer)));
+  const invCustomers=[...invCustomerSet];
+
+  // Match ledger customers → invoice customers
+  const matchMap={}; // ledger raw name → {match, method, score}
+  const ledgerCustomerSet=new Set();
+  ledgerData.rows.forEach(r=>ledgerCustomerSet.add(r.customer));
+  
+  const nameMatches=[];
+  for(const lc of ledgerCustomerSet){
+    const res=smartMatch(lc,invCustomers);
+    matchMap[lc]=res;
+    if(res.method!=='精确匹配'&&res.match){
+      nameMatches.push({original:lc,matched:res.match,method:res.method,score:res.score});
+    }
+  }
+
+  // Aggregate invoice by normalized customer
+  const invByCust={},invDetailByCust={};
+  invoiceData.rows.forEach(r=>{
+    const key=normalize(r.customer);
+    if(!invByCust[key]){invByCust[key]=0;invDetailByCust[key]=[]}
+    invByCust[key]+=r.tax;
+    invDetailByCust[key].push(r);
+  });
+
+  // Aggregate ledger by matched customer (or original if no match)
+  const ldgByCust={},ldgDetailByCust={};
+  ledgerData.rows.forEach(r=>{
+    const m=matchMap[r.customer];
+    const key=m&&m.match?normalize(m.match):normalize(r.customer);
+    if(!ldgByCust[key]){ldgByCust[key]=0;ldgDetailByCust[key]=[]}
+    ldgByCust[key]+=r.credit;
+    ldgDetailByCust[key].push(r);
+  });
+
+  // Compare
+  const allKeys=new Set([...Object.keys(invByCust),...Object.keys(ldgByCust)]);
+  const diffs=[];
+  for(const key of allKeys){
+    const inv=invByCust[key]||0;
+    const ldg=ldgByCust[key]||0;
+    const diff=ldg-inv;
+    if(Math.abs(diff)<=0.005) continue;
+    let type='金额不符',doc='';
+    if(Math.abs(diff)<=0.02){type='尾差'}
+    else if(Math.abs(inv)<0.01&&Math.abs(ldg)>0.01){type='账面有/发票无';const ds=ldgDetailByCust[key]||[];doc=ds.slice(0,3).map(d=>d.voucher).filter(Boolean).join(', ')}
+    else if(Math.abs(ldg)<0.01&&Math.abs(inv)>0.01){type='发票有/账面无';const ds=invDetailByCust[key]||[];doc=ds.slice(0,3).map(d=>d.invNo).filter(Boolean).join(', ')}
+    else {
+      // Find unmatched
+      const invDs=invDetailByCust[key]||[];
+      const ldgDs=(ldgDetailByCust[key]||[]).map(d=>({...d,matched:false}));
+      let unmatchedInv=[];
+      for(const inv of invDs){
+        let found=false;
+        for(let j=0;j<ldgDs.length;j++){if(!ldgDs[j].matched&&Math.abs(inv.tax-ldgDs[j].credit)<0.01){ldgDs[j].matched=true;found=true;break}}
+        if(!found) unmatchedInv.push(inv);
+      }
+      let unmatchedLdg=ldgDs.filter(d=>!d.matched);
+      // Check direction error
+      for(const inv of invDs){
+        for(const ldg of (ldgDetailByCust[key]||[])){
+          if(Math.abs(inv.tax+ldg.credit)<0.01&&inv.tax<0){type='方向记反';doc=`发票${inv.invNo||inv.tax.toFixed(2)} 应为负数，凭证${ldg.voucher}记为正数`;break}
+        }
+        if(type==='方向记反') break;
+      }
+      if(type!=='方向记反'){
+        if(unmatchedInv.length>0) doc='未入账: '+unmatchedInv.slice(0,3).map(d=>d.invNo||d.tax.toFixed(2)).join(', ')+(unmatchedInv.length>3?' 等'+unmatchedInv.length+'笔':'');
+        if(unmatchedLdg.length>0){if(doc)doc+=' | ';doc+='无发票: '+unmatchedLdg.slice(0,3).map(d=>d.voucher||d.credit.toFixed(2)).join(', ')}
+      }
+    }
+    diffs.push({customer:key,inv,ldg,diff,type,doc,invDetails:invDetailByCust[key]||[],ldgDetails:ldgDetailByCust[key]||[]});
+  }
+  diffs.sort((a,b)=>Math.abs(b.diff)-Math.abs(a.diff));
+
+  const invTotal=Object.values(invByCust).reduce((s,v)=>s+v,0);
+  const ldgTotal=Object.values(ldgByCust).reduce((s,v)=>s+v,0);
+  return {invTotal,ldgTotal,diff:ldgTotal-invTotal,company:invoiceData.meta.seller||'未识别公司',diffs,nameMatches};
+}
+
+// ====== DISPLAY ======
+function fmt(n){return n.toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function switchTab(id){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',b.getAttribute('onclick').includes(id)));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.toggle('active',c.id==='tab-'+id));
+}
+
+function displayResults(r){
+  document.getElementById('results').classList.add('visible');
+  document.getElementById('companyTag').innerHTML='<i class="fa-solid fa-building"></i> '+r.company;
+  document.getElementById('vInv').textContent='¥'+fmt(r.invTotal);
+  document.getElementById('vLdg').textContent='¥'+fmt(r.ldgTotal);
+  document.getElementById('vDiff').textContent=(r.diff>=0?'+':'')+fmt(r.diff);
+
+  const realDiffs=r.diffs.filter(d=>d.type!=='尾差'&&d.type!=='账面有/发票无');
+  const nonSales=r.diffs.filter(d=>d.type==='账面有/发票无');
+  const tails=r.diffs.filter(d=>d.type==='尾差');
+  document.getElementById('vCount').textContent=realDiffs.length;
+  document.getElementById('statusText').textContent=`核对完成：${realDiffs.length}个实质差异 · ${nonSales.length}个非销售业务 · ${r.nameMatches.length}个智能匹配 · ${tails.length}个尾差`;
+  document.getElementById('bdReal').textContent=realDiffs.length+'项';
+  document.getElementById('bdNon').textContent=nonSales.length+'项';
+  document.getElementById('bdName').textContent=r.nameMatches.length+'项';
+  document.getElementById('bdTail').textContent=tails.length+'项';
+
+  // Real diffs
+  const tb1=document.getElementById('tbReal');tb1.innerHTML='';
+  realDiffs.forEach((d,i)=>{
+    const tr=document.createElement('tr');tr.style.cursor='pointer';
+    tr.onclick=()=>{const dr=document.getElementById('dr-'+i);const ar=document.getElementById('ar-'+i);dr.classList.toggle('visible');ar.classList.toggle('open')};
+    tr.innerHTML=`<td><i class="fa-solid fa-chevron-right expand-btn" id="ar-${i}"></i></td><td><strong>${d.customer}</strong></td><td class="amount">${fmt(d.inv)}</td><td class="amount">${fmt(d.ldg)}</td><td class="amount ${d.diff<0?'neg':''}">${d.diff>0?'+':''}${fmt(d.diff)}</td><td><span class="badge badge-red">${d.type}</span></td><td style="font-size:11px;color:var(--text-sec);max-width:200px">${d.doc}</td>`;
+    tb1.appendChild(tr);
+    const dr=document.createElement('tr');dr.className='detail-row';dr.id='dr-'+i;
+    let html='<td colspan="7"><div class="detail-panel">';
+    if(d.invDetails.length){
+      html+='<h4><i class="fa-solid fa-file-invoice"></i> 发票明细 ('+d.invDetails.length+'笔)</h4><table><thead><tr><th>发票号码</th><th>日期</th><th>税额</th><th>税率</th><th>蓝/红</th><th>状态</th></tr></thead><tbody>';
+      d.invDetails.slice(0,30).forEach(x=>{html+=`<tr><td>${x.invNo||'-'}</td><td>${x.date||'-'}</td><td class="amount">${fmt(x.tax)}</td><td>${x.rate||'-'}</td><td>${x.type}</td><td>${x.status||'-'}</td></tr>`});
+      html+='</tbody></table>';
+    }
+    if(d.ldgDetails.length){
+      html+='<h4 style="margin-top:8px"><i class="fa-solid fa-book"></i> 账面凭证 ('+d.ldgDetails.length+'笔)</h4><table><thead><tr><th>凭证号</th><th>日期</th><th>贷方</th><th>摘要</th></tr></thead><tbody>';
+      d.ldgDetails.slice(0,30).forEach(x=>{html+=`<tr><td>${x.voucher||'-'}</td><td>${x.date||'-'}</td><td class="amount">${fmt(x.credit)}</td><td>${x.summary||'-'}</td></tr>`});
+      html+='</tbody></table>';
+    }
+    html+='</div></td>';dr.innerHTML=html;tb1.appendChild(dr);
+  });
+
+  // Non-sales
+  const tb2=document.getElementById('tbNon');tb2.innerHTML='';
+  nonSales.forEach(d=>{tb2.innerHTML+=`<tr><td>${d.customer}</td><td class="amount">${fmt(d.ldg)}</td><td>${guessNature(d.customer)}</td></tr>`});
+
+  // Name matches
+  const tb3=document.getElementById('tbName');tb3.innerHTML='';
+  r.nameMatches.forEach(m=>{
+    const cls=m.method.includes('提取')?'match-extracted':m.method.includes('前缀')?'match-prefix':'match-exact';
+    tb3.innerHTML+=`<tr><td>${m.original}</td><td>${m.matched}</td><td><span class="match-tag ${cls}">${m.method}</span></td><td>${Math.round(m.score*100)}%</td></tr>`;
+  });
+
+  // Tails
+  const tb4=document.getElementById('tbTail');tb4.innerHTML='';
+  tails.forEach(d=>{tb4.innerHTML+=`<tr><td>${d.customer}</td><td class="amount">${d.diff>0?'+':''}${fmt(d.diff)}</td></tr>`});
+}
+
+function guessNature(c){
+  if(c.includes('电力')||c.includes('电费'))return'电费';
+  if(c.includes('租赁')||c.includes('租金')||c.includes('公寓'))return'租赁/租金';
+  if(c.includes('充电')||c.includes('财付通'))return'充电桩收入';
+  if(c.includes('公共供应商')||c.includes('手续费'))return'三代手续费';
+  if(c.includes('血浆')||c.includes('莱士'))return'集团内往来';
+  if(c.includes('废品')||c.includes('再生')||c.includes('报废'))return'废品/报废处置';
+  if(/^[\u4e00-\u9fa5]{2,3}$/.test(c))return'个人（员工租金等）';
+  return'待确认';
+}
+
+// ====== EXPORT ======
+function exportExcel(){
+  if(!result) return;
+  const wb=XLSX.utils.book_new();
+  // S1 差异汇总
+  const s1=[['客户名称','发票税金','账面税金','差异金额','差异类型','问题单据']];
+  result.diffs.forEach(d=>s1.push([d.customer,d.inv,d.ldg,d.diff,d.type,d.doc]));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(s1),'差异汇总');
+  // S2 未入账
+  const s2=[['客户','发票号码','日期','税额','税率','蓝红字','状态']];
+  result.diffs.filter(d=>d.inv!==0).forEach(d=>{
+    let pool=(d.ldgDetails||[]).map(l=>({...l,m:false}));
+    (d.invDetails||[]).forEach(inv=>{
+      let f=false;for(let j=0;j<pool.length;j++){if(!pool[j].m&&Math.abs(inv.tax-pool[j].credit)<0.01){pool[j].m=true;f=true;break}}
+      if(!f) s2.push([d.customer,inv.invNo,inv.date,inv.tax,inv.rate,inv.type,inv.status]);
+    });
+  });
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(s2),'发票未入账明细');
+  // S3 无发票凭证
+  const s3=[['客户','凭证号','日期','贷方','摘要']];
+  result.diffs.filter(d=>d.ldg!==0).forEach(d=>{
+    let pool=(d.invDetails||[]).map(i=>({...i,m:false}));
+    (d.ldgDetails||[]).forEach(l=>{
+      let f=false;for(let j=0;j<pool.length;j++){if(!pool[j].m&&Math.abs(l.credit-pool[j].tax)<0.01){pool[j].m=true;f=true;break}}
+      if(!f) s3.push([d.customer,l.voucher,l.date,l.credit,l.summary]);
+    });
+  });
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(s3),'凭证无发票明细');
+  // S4 名称映射
+  const s4=[['账面原始名称','匹配到发票客户','匹配方式','置信度']];
+  result.nameMatches.forEach(m=>s4.push([m.original,m.matched,m.method,Math.round(m.score*100)+'%']));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(s4),'名称匹配映射');
+  XLSX.writeFile(wb,`销项税金差异明细_${result.company}_${new Date().toISOString().substring(0,10)}.xlsx`);
+}
+</script>
+
+</body></html>
